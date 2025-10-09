@@ -86,12 +86,12 @@ The final outcome of the project will be a functional IoT system that enables:
 
 # Team
 
-Piotr Ziobrowski - ?
+Piotr Ziobrowski - embedded programming 
 
-Szymon Domagała - ?
+Szymon Domagała - frontend, UI
 
-Paweł Klocek - ?
+Paweł Klocek - database, documentation
 
-Aleksy Dąda - ?
+Aleksy Dąda - backend, docker
 
-Patryk Kurek - hardware and embedded programmming
+Patryk Kurek - hardware and embedded programmming and tech menago
