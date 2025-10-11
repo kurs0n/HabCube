@@ -1,0 +1,118 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: habcube-postgres
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5433:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U test_user -d habcube"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - habcube-network
+
+  redis:
+    image: redis:7-alpine
+    container_name: habcube-redis
+    restart: unless-stopped
+    env_file:
+      - .env
+    command: redis-server --appendonly yes --requirepass ${REDIS_PASSWORD}
+    volumes:
+      - redis_data:/data
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "--raw", "incr", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - habcube-network
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: habcube-backend
+    restart: unless-stopped
+    user: ${CURRENT_UID}
+    env_file:
+      - .env
+    environment:
+      FLASK_APP: wsgi.py
+      FLASK_ENV: ${FLASK_ENV}
+      DATABASE_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}
+      REDIS_URL: redis://:${REDIS_PASSWORD}@redis:6379/0
+      SECRET_KEY: ${SECRET_KEY}
+      JWT_SECRET_KEY: ${JWT_SECRET_KEY}
+    volumes:
+      - ./backend:/app
+      - backend_logs:/app/logs
+    ports:
+      - "5000:5000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - habcube-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  adminer:
+    image: adminer:latest
+    container_name: habcube-adminer
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+    environment:
+      ADMINER_DEFAULT_SERVER: postgres
+      ADMINER_DESIGN: nette
+    depends_on:
+      - postgres
+    networks:
+      - habcube-network
+
+  code-quality:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: habcube-code-quality
+    volumes:
+      - ./backend:/usr/src
+    working_dir: /usr/src
+    networks:
+      - habcube-network
+    profiles:
+      - tools
+    command: >
+      sh -c "echo 'Code quality tools ready. Use: docker-compose run --rm code-quality <command>'"
+
+networks:
+  habcube-network:
+    driver: bridge
+    name: habcube-network
+
+volumes:
+  postgres_data:
+    name: habcube-postgres-data
+  redis_data:
+    name: habcube-redis-data
+  backend_logs:
+    name: habcube-backend-logs

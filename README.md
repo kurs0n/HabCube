@@ -86,7 +86,7 @@ The final outcome of the project will be a functional IoT system that enables:
 
 # Team
 
-Piotr Ziobrowski - embedded programming 
+Piotr Ziobrowski - embedded programming
 
 Szymon Domagała - frontend, UI
 
@@ -95,3 +95,125 @@ Paweł Klocek - database, documentation
 Aleksy Dąda - backend, docker
 
 Patryk Kurek - hardware and embedded programmming and tech menago
+
+---
+
+## Development Setup
+
+### Konfiguracja środowiska
+
+Polecam podpiac pre-commit (jest niżej how-to)
+
+#### WAŻNE:
+
+W pierwszej kolejnosci uruchom skrypt setup, który automatycznie doda export CURRENT_UID do ~/.bashrc (unikniemy potem ew. problemow z permissions do plikow i folderow):
+
+```bash
+./setup-env.sh
+source ~/.bashrc
+```
+
+### Pierwsze uruchomienie
+
+```bash
+# 1. Build obrazu
+docker-compose up -d --build
+
+# 2. Status kontenerow (lub w GUI)
+docker-compose ps
+
+# 3. Logi
+docker-compose logs -f backend
+
+# 4. Check apki
+curl http://localhost:5000/health
+```
+
+### Uruchomienie
+
+```bash
+# Można uruchomić tak lub MAKEFILE'em
+docker-compose up -d
+
+# Stop
+docker-compose down
+```
+
+### Użycie Makefile (polecanko)
+
+Makefile automatycznie eksportuje CURRENT_UID:
+
+```bash
+make init      # Pierwsze uruchomienie
+make up        # Uruchom
+make down      # Zatrzymaj
+make logs      # Zobacz logi
+make test      # Uruchom testy
+make help      # Zobacz wszystkie komendy
+```
+
+### Serwisy
+
+- Backend: http://localhost:5000
+- Adminer (DB UI): http://localhost:8080
+- PostgreSQL: localhost:5432
+- Redis: localhost:6379
+
+### Komendy
+
+```bash
+# Basic
+docker-compose up -d
+docker-compose down
+docker-compose logs -f
+docker-compose ps
+
+# Rebuild
+docker-compose build
+docker-compose up -d --build
+
+# Shell
+docker-compose exec backend bash
+
+# Testy i CQ
+docker-compose exec backend pytest
+docker-compose exec backend pytest --cov=app
+docker-compose exec backend flake8 app/
+docker-compose exec backend black app/
+docker-compose exec backend pylint app/
+docker-compose exec backend mypy app/
+
+# Baza danych
+docker-compose exec postgres psql -U habcube_user -d habcube
+docker-compose exec backend flask db migrate -m "opis"
+docker-compose exec backend flask db upgrade
+
+# Makefile też jest
+make help
+```
+
+### Pre-commit hook
+
+Pre-commit hook uruchamia checki kodu
+
+```bash
+# 1. Utworzenie symlinku do hooka
+ln -sf ../../pre-commit .git/hooks/pre-commit
+
+# 2. Permissions
+chmod +x pre-commit
+```
+
+Sprawdza:
+
+- Black (formatowanie), isort (sortowanie importów)
+- Flake8 (style), Pylint (jakość), MyPy (typy)
+
+Można też uruchamiać ręcznie:
+
+```bash
+make lint      # Sprawdź kod
+make format    # Auto-formatowanie
+make test      # Uruchom testy
+make quality   # all ekskljuziw
+```

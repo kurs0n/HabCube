@@ -1,0 +1,53 @@
+set -e
+
+echo "Running code quality checks in Docker..."
+
+# Get list of staged Python files
+STAGED_FILES=$(git diff --cached --name-only --diff-filter=ACM | grep '\.py$' || true)
+
+if [ -z "$STAGED_FILES" ]; then
+    echo "No Python files to check"
+    exit 0
+fi
+
+echo "Checking files:"
+echo "$STAGED_FILES" | sed 's/^/  - /'
+
+# First, auto-fix formatting
+echo ""
+echo "Auto-fixing formatting..."
+docker-compose run --rm --no-deps code-quality sh -c "
+    cd /usr/src && \
+    echo 'Running Black (auto-fix)...' && \
+    black . && \
+    echo 'Running isort (auto-fix)...' && \
+    isort .
+"
+
+# Re-stage modified files
+for file in $STAGED_FILES; do
+    git add "$file"
+done
+
+# Now run checks that need manual fixes
+echo ""
+echo "Running code quality checks..."
+docker-compose run --rm --no-deps code-quality sh -c "
+    cd /usr/src && \
+    echo 'Running Flake8...' && \
+    flake8 . && \
+    echo 'Running Pylint...' && \
+    pylint app/ && \
+    echo 'Running MyPy...' && \
+    mypy app/ --ignore-missing-imports
+"
+
+if [ $? -eq 0 ]; then
+    echo ""
+    echo "All checks passed! Formatting was auto-fixed."
+else
+    echo ""
+    echo "Code quality checks failed. Please fix the issues above."
+    echo "Tip: Run 'make lint' to see details"
+    exit 1
+fi
