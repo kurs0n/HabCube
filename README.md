@@ -62,11 +62,11 @@ Hardware: ESP32, 4 OLED Screens(I2C, SPI), gyroscope, Multiplexer, 2 Tact switch
 
 Software:
 
-Backend: To be determined (e.g., Python with FastAPI).
+Backend: To be determined Python with FastAPI.
 
 Mobile App/UI: To be determined.
 
-Database: To be determined.
+Database: PostgreSQL.
 
 Project Management: GitHub Project (Kanban board).
 
