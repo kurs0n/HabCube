@@ -1,4 +1,4 @@
-.PHONY: help build up down restart logs clean test lint format shell db-shell
+.PHONY: help build up down restart logs clean test lint format shell db-shell api-docs
 
 # Export CURRENT_UID for docker-compose
 export CURRENT_UID := $(shell id -u):$(shell id -g)
@@ -75,6 +75,9 @@ test-cov: ## Uruchom testy z pokryciem
 test-verbose: ## Uruchom testy w trybie verbose
 	docker-compose exec backend pytest -v
 
+test-watch: ## Uruchom testy w trybie watch (automatyczne ponowne uruchamianie)
+	docker-compose exec backend pytest-watch
+
 # Code quality
 lint: ## Sprawdź kod (flake8, pylint, mypy)
 	docker-compose run --rm --no-deps code-quality sh -c "cd /usr/src && flake8 . && pylint app/ && mypy app/"
@@ -87,6 +90,9 @@ format-check: ## Sprawdź formatowanie bez zmian
 
 type-check: ## Sprawdź typy (mypy)
 	docker-compose run --rm --no-deps code-quality sh -c "cd /usr/src && mypy app/ --ignore-missing-imports"
+
+fix: ## Auto-napraw co się da (format + autoflake)
+	docker-compose run --rm --no-deps code-quality sh -c "cd /usr/src && black . && isort . && flake8 . --exit-zero"
 
 quality: format lint ## Auto-formatuj i sprawdź jakość kodu
 
@@ -114,6 +120,11 @@ init: build up ## Inicjalizacja projektu (build + up)
 # Monitoring
 health: ## Sprawdź health check backendu
 	@curl -s http://localhost:5000/health | python3 -m json.tool
+
+api-docs: ## Otwórz Swagger UI
+	@echo "Otwieranie dokumentacji API..."
+	@echo "Swagger UI: http://localhost:5000/api/docs/"
+	@xdg-open http://localhost:5000/api/docs/ 2>/dev/null || open http://localhost:5000/api/docs/ 2>/dev/null || echo "Otwórz ręcznie: http://localhost:5000/api/docs/"
 
 # Development workflow
 dev: up logs ## Uruchom w trybie deweloperskim i pokaż logi
