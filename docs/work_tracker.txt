@@ -1,0 +1,32 @@
+9.10.2025 - 16.10.2025
+done: 
+paweł: 
+    - schemat bazy
+    - wybór technologii do backendu
+aleks:
+    - setup serwera
+    - setup bazy danych w dockerze
+    - setup środowiska
+    - wybór technologii do backendu
+    - modele bazy danych
+    - dokumentacja swagger
+patryk:
+    - schemat elektroniczny
+    - wybór hardware'u
+    - przygotowanie dokumentacji sprzętowej
+piotrek: 
+    - schemat elektroniczny 
+    - wybór hardware'u
+szymon:
+    - wybór technologii frontendowej
+    - stworzenie koncepcyjnych widoków aplikacji (main page, add habit, finished habits) 
+- podział prac 
+todo:
+    - zakup/wypozyczenie sprzętu
+    - złozenie i przetestowanie sprzetu na płytce stykowej
+    - wybór frameworku do aplikacji mobilnej
+    - przygotowanie IDE I tools do kodowania ESP32
+    - High levelowy opis całego projektu
+    - utworzenie api endpointów CRUD do zarządzania nawykami
+    - podłączenie frontendu do backendu proste wyświetlanie listy nawyków
+    - deploy backendu
