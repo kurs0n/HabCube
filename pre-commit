@@ -42,12 +42,27 @@ docker-compose run --rm --no-deps code-quality sh -c "
     mypy app/ --ignore-missing-imports
 "
 
-if [ $? -eq 0 ]; then
-    echo ""
-    echo "All checks passed! Formatting was auto-fixed."
-else
+if [ $? -ne 0 ]; then
     echo ""
     echo "Code quality checks failed. Please fix the issues above."
     echo "Tip: Run 'make lint' to see details"
+    exit 1
+fi
+
+# Run tests
+echo ""
+echo "Running tests..."
+docker-compose run --rm backend sh -c "
+    cd /app && \
+    pytest tests/ -v --tb=short -p no:cacheprovider
+"
+
+if [ $? -eq 0 ]; then
+    echo ""
+    echo "All checks and tests passed!"
+else
+    echo ""
+    echo "Tests failed. Please fix the issues above."
+    echo "Tip: Run 'make test' to see details"
     exit 1
 fi

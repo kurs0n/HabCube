@@ -1,6 +1,7 @@
 from flask import Blueprint, jsonify
 
 from app import db
+from app.routes.habits import habits_bp
 
 # Health check blueprint
 health_bp = Blueprint("health", __name__)
@@ -22,3 +23,6 @@ def health_check():
 
 
 api_bp = Blueprint("api", __name__)
+
+# Register habits blueprint
+api_bp.register_blueprint(habits_bp)

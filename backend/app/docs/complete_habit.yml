@@ -1,0 +1,43 @@
+tags:
+  - Habits
+summary: Mark a habit as completed
+description: Mark a habit as completed for today. Updates task records and statistics including streaks.
+parameters:
+  - name: habit_id
+    in: path
+    type: integer
+    required: true
+    description: ID of the habit to complete
+responses:
+  200:
+    description: Habit completed successfully
+    examples:
+      success:
+        message: "Habit completed successfully"
+        task:
+          id: 1
+          habit_id: 1
+          date: "2025-10-15"
+          completed: true
+          completion_time: "2025-10-15T14:30:00"
+        statistics:
+          id: 1
+          habit_id: 1
+          total_completions: 16
+          current_streak: 6
+          best_streak: 10
+          success_rate: 87.5
+          last_completed: "2025-10-15"
+          updated_at: "2025-10-15T14:30:00"
+  400:
+    description: Habit already completed today
+    examples:
+      already_completed:
+        error: "Habit already completed today"
+  404:
+    description: Habit not found
+    examples:
+      not_found:
+        error: "Habit not found"
+  500:
+    description: Server error

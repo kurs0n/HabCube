@@ -217,3 +217,43 @@ make format    # Auto-formatowanie
 make test      # Uruchom testy
 make quality   # all ekskljuziw
 ```
+
+---
+
+## Changelog
+
+### 2025-10-15
+
+**Habits API - Initial Implementation**
+
+- **Modele**
+
+  - Utworzono model `Habit` - przechowywanie nawyków użytkownika
+  - Utworzono model `HabitTask` - rejestrowanie wykonań nawyków
+  - Utworzono model `HabitStatistics` - statystyki i streaki
+  - Dodano migracje bazy danych
+
+- **Enumy i DTO**
+
+  - `FrequencyType` enum: every_30_min, hourly, every_3_hours, every_6_hours, daily, weekly, monthly
+  - `CreateHabitDTO` - walidacja danych wejściowych
+  - `HabitResponseDTO` - format odpowiedzi API
+
+- **ENDPOINTY**
+
+  - `GET /api/v1/habits` - lista wszystkich nawyków
+  - `GET /api/v1/habits/{id}` - szczegóły nawyku ze statystykami
+  - `POST /api/v1/habits` - tworzenie nowego nawyku
+  - `POST /api/v1/habits/{id}/complete` - oznaczanie nawyku jako ukończony
+
+- **Dokumentacja API**
+
+  - Integracja Swagger/Flasgger
+  - Przykłady request/response dla każdego endpointa
+  - Dostępna pod: http://localhost:5000/api/docs/
+
+- **Testy**
+  - Testy dla wszystkich endpointów
+  - Testy walidacji danych
+  - Testy błędnych przypadków (404, 400)
+  - Testy trackowania statystyk i streaków

@@ -13,6 +13,9 @@ redis==5.0.1
 marshmallow==3.20.1
 python-dotenv==1.0.0
 
+# API Documentation
+flasgger==0.9.7.1
+
 # WSGI Server
 gunicorn==21.2.0
 
@@ -28,6 +31,8 @@ black==23.12.1
 isort==5.13.2
 pylint==3.0.3
 mypy==1.7.1
+sqlalchemy-stubs==0.4
+types-redis==4.6.0.20240106
 
 # Utils
 python-dateutil==2.8.2
