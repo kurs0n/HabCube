@@ -1,0 +1,85 @@
+# Cloud Build pipeline for HabCube: build, push, deploy, migrate, seed
+
+steps:
+  # 1. Build Docker image
+  - name: "gcr.io/cloud-builders/docker"
+    args: ["build", "-t", "${_IMAGE_TAG}", "./backend"]
+
+  # 2. Push Docker image to Artifact Registry
+  - name: "gcr.io/cloud-builders/docker"
+    args: ["push", "${_IMAGE_TAG}"]
+
+  # 3. Deploy to Cloud Run
+  - name: "gcr.io/google.com/cloudsdktool/cloud-sdk"
+    entrypoint: "bash"
+    args:
+      - "-c"
+      - |
+        gcloud run deploy habcube-backend \
+          --image "${_IMAGE_TAG}" \
+          --platform managed \
+          --region "${_REGION}" \
+          --allow-unauthenticated \
+          --port 5000 \
+          --service-account "${_SERVICE_ACCOUNT}" \
+          --add-cloudsql-instances "${_CLOUD_SQL_CONNECTION_NAME}" \
+          --vpc-connector "projects/${_PROJECT_ID}/locations/${_REGION}/connectors/vpc" \
+          --set-env-vars "FLASK_ENV=production,DB_HOST=/cloudsql/${_CLOUD_SQL_CONNECTION_NAME},DB_PORT=5432,DB_USER=${_DB_USER},DB_NAME=${_DB_NAME},REDIS_HOST=${_REDIS_HOST},REDIS_PORT=${_REDIS_PORT}" \
+          --update-secrets "DB_PASSWORD=db-password:latest,REDIS_PASSWORD=redis-password:latest,SECRET_KEY=flask-key:latest,JWT_SECRET_KEY=jwt-key:latest"
+
+  # 4. (Re)create and run migration job
+  - name: "gcr.io/google.com/cloudsdktool/cloud-sdk"
+    entrypoint: "bash"
+    args:
+      - "-c"
+      - |
+        set -e
+        MIGRATE_JOB_EXISTS=$(gcloud run jobs describe habcube-migrate --region "${_REGION}" --format='value(name)' || true)
+        if [ -n "$MIGRATE_JOB_EXISTS" ]; then
+          gcloud run jobs delete habcube-migrate --region "${_REGION}" --quiet
+        fi
+        gcloud run jobs create habcube-migrate \
+          --image "${_IMAGE_TAG}" \
+          --region "${_REGION}" \
+          --service-account "${_SERVICE_ACCOUNT}" \
+          --vpc-connector "projects/${_PROJECT_ID}/locations/${_REGION}/connectors/vpc" \
+          --add-cloudsql-instances "${_CLOUD_SQL_CONNECTION_NAME}" \
+          --set-env-vars "FLASK_ENV=production,DB_HOST=/cloudsql/${_CLOUD_SQL_CONNECTION_NAME},DB_PORT=5432,DB_USER=${_DB_USER},DB_NAME=${_DB_NAME},REDIS_HOST=${_REDIS_HOST},REDIS_PORT=${_REDIS_PORT}" \
+          --update-secrets "DB_PASSWORD=db-password:latest,REDIS_PASSWORD=redis-password:latest,SECRET_KEY=flask-key:latest,JWT_SECRET_KEY=jwt-key:latest" \
+          --command "flask" --args "db","upgrade" \
+          --task-timeout 5m
+        gcloud run jobs execute habcube-migrate --region "${_REGION}" --wait
+
+  # 5. (Re)create and run seed job
+  - name: "gcr.io/google.com/cloudsdktool/cloud-sdk"
+    entrypoint: "bash"
+    args:
+      - "-c"
+      - |
+        set -e
+        SEED_JOB_EXISTS=$(gcloud run jobs describe habcube-seed --region "${_REGION}" --format='value(name)' || true)
+        if [ -n "$SEED_JOB_EXISTS" ]; then
+          gcloud run jobs delete habcube-seed --region "${_REGION}" --quiet
+        fi
+        gcloud run jobs create habcube-seed \
+          --image "${_IMAGE_TAG}" \
+          --region "${_REGION}" \
+          --service-account "${_SERVICE_ACCOUNT}" \
+          --vpc-connector "projects/${_PROJECT_ID}/locations/${_REGION}/connectors/vpc" \
+          --add-cloudsql-instances "${_CLOUD_SQL_CONNECTION_NAME}" \
+          --set-env-vars "FLASK_ENV=production,DB_HOST=/cloudsql/${_CLOUD_SQL_CONNECTION_NAME},DB_PORT=5432,DB_USER=${_DB_USER},DB_NAME=${_DB_NAME},REDIS_HOST=${_REDIS_HOST},REDIS_PORT=${_REDIS_PORT}" \
+          --update-secrets "DB_PASSWORD=db-password:latest,REDIS_PASSWORD=redis-password:latest,SECRET_KEY=flask-key:latest,JWT_SECRET_KEY=jwt-key:latest" \
+          --command "flask" --args "seed" \
+          --task-timeout 5m
+        gcloud run jobs execute habcube-seed --region "${_REGION}" --wait
+
+substitutions:
+  _PROJECT_ID: "habcube"
+  _REGION: "europe-west1"
+  _IMAGE_TAG: "europe-west1-docker.pkg.dev/habcube/habcube/habcube-backend:latest"
+  _SERVICE_ACCOUNT: "cloud-run-service-account@habcube.iam.gserviceaccount.com"
+  _CLOUD_SQL_CONNECTION_NAME: "habcube:europe-west1:postgres"
+  _DB_USER: "habcubeuser"
+  _DB_NAME: "habcube"
+  _REDIS_HOST: "10.0.0.3"
+  _REDIS_PORT: "6379"
