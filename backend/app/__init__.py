@@ -61,6 +61,7 @@ def create_app(config_name=None):
 
     # Register CLI commands
     from app import cli
+
     cli.init_app(app)
 
     return app

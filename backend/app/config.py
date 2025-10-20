@@ -19,7 +19,7 @@ class Config:
     _database_url_from_env = os.getenv("DATABASE_URL")
     if _database_url_from_env:
         SQLALCHEMY_DATABASE_URI = _database_url_from_env
-    elif DB_HOST and DB_HOST.startswith('/cloudsql/'):
+    elif DB_HOST and DB_HOST.startswith("/cloudsql/"):
         # Połączenie przez Unix socket dla Cloud SQL Proxy
         unix_socket_path = f"{DB_HOST}"
         SQLALCHEMY_DATABASE_URI = f"postgresql+psycopg2://{DB_USER}:{DB_PASSWORD}@/{DB_NAME}?host={unix_socket_path}"

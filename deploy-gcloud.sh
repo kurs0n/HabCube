@@ -2,7 +2,7 @@
 create_migration_job() {
     log_info "Tworzenie/aktualizacja zadania migracji Cloud Run..."
 
-    IMAGE_TAG="${REGION}-docker.pkg.dev/${PROJECT_ID}/habcube/habcube-backend:latest"
+    IMAGE_TAG="${REGION}-docker.pkg.dev/${PROJECT_ID}/iot2025-475717/habcube-backend:latest"
     SERVICE_ACCOUNT="${SERVICE_ACCOUNT:-cloud-run-service-account@${PROJECT_ID}.iam.gserviceaccount.com}"
     VPC_CONNECTOR_FULL_PATH="projects/${PROJECT_ID}/locations/${REGION}/connectors/vpc"
 

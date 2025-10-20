@@ -74,12 +74,12 @@ steps:
         gcloud run jobs execute habcube-seed --region "${_REGION}" --wait
 
 substitutions:
-  _PROJECT_ID: "habcube"
+  _PROJECT_ID: "iot2025-475717"
   _REGION: "europe-west1"
   _IMAGE_TAG: "europe-west1-docker.pkg.dev/habcube/habcube/habcube-backend:latest"
   _SERVICE_ACCOUNT: "cloud-run-service-account@habcube.iam.gserviceaccount.com"
-  _CLOUD_SQL_CONNECTION_NAME: "habcube:europe-west1:postgres"
-  _DB_USER: "habcubeuser"
+  _CLOUD_SQL_CONNECTION_NAME: "iot2025-475717:europe-west1:postgres"
+  _DB_USER: "admin"
   _DB_NAME: "habcube"
   _REDIS_HOST: "10.0.0.3"
   _REDIS_PORT: "6379"

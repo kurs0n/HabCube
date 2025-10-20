@@ -1,12 +1,13 @@
 """Flask CLI commands for database seeding and maintenance"""
-import random
 import datetime
+import random
+
 import click
 from flask.cli import with_appcontext
 
 from app import db
-from app.models.habit import Habit, HabitStatistics
 from app.models.enums import FrequencyType
+from app.models.habit import Habit, HabitStatistics
 
 
 @click.command("seed")
@@ -28,7 +29,9 @@ def seed_db():
             description=f"Description for habit {i}",
             frequency=freq,
             active=bool(random.getrandbits(1)),
-            deadline_time=datetime.time(hour=random.randint(0, 23), minute=random.choice([0, 15, 30, 45])),
+            deadline_time=datetime.time(
+                hour=random.randint(0, 23), minute=random.choice([0, 15, 30, 45])
+            ),
             color=random.choice(colors),
         )
         db.session.add(habit)
