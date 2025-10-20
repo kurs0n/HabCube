@@ -1,3 +1,36 @@
+# Fixture to populate the database with many sample habits and statistics
+import random
+import datetime
+
+@pytest.fixture(scope="function")
+def many_habits(app):
+    with app.app_context():
+        habits = []
+        frequencies = [
+            "every_30_min", "hourly", "every_3_hours", "daily", "weekly", "monthly"
+        ]
+        colors = ["red", "blue", "green", "yellow", "purple", "orange", "gray"]
+        for i in range(1, 51):
+            habit = Habit(
+                name=f"Habit {i}",
+                description=f"Description for habit {i}",
+                frequency=random.choice(frequencies),
+                active=bool(random.getrandbits(1)),
+                deadline_time=datetime.time(hour=random.randint(0, 23), minute=random.choice([0, 15, 30, 45])),
+                color=random.choice(colors),
+            )
+            db.session.add(habit)
+            db.session.flush()
+            stats = HabitStatistics(
+                habit_id=habit.id,
+                total_completions=random.randint(0, 100),
+                current_streak=random.randint(0, 20),
+                best_streak=random.randint(0, 30),
+            )
+            db.session.add(stats)
+            habits.append(habit.id)
+        db.session.commit()
+        yield habits
 import pytest
 
 from app import create_app, db
