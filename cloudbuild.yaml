@@ -1,5 +1,3 @@
-# Cloud Build pipeline for HabCube: build, push, deploy, migrate, seed
-
 steps:
   # 1. Build Docker image
   - name: "gcr.io/cloud-builders/docker"
@@ -15,16 +13,15 @@ steps:
     args:
       - "-c"
       - |
-        gcloud run deploy habcube-backend \
+        gcloud run deploy backend \
           --image "${_IMAGE_TAG}" \
           --platform managed \
           --region "${_REGION}" \
           --allow-unauthenticated \
-          --port 5000 \
           --service-account "${_SERVICE_ACCOUNT}" \
-          --add-cloudsql-instances "${_CLOUD_SQL_CONNECTION_NAME}" \
           --vpc-connector "projects/${_PROJECT_ID}/locations/${_REGION}/connectors/vpc" \
-          --set-env-vars "FLASK_ENV=production,DB_HOST=/cloudsql/${_CLOUD_SQL_CONNECTION_NAME},DB_PORT=5432,DB_USER=${_DB_USER},DB_NAME=${_DB_NAME},REDIS_HOST=${_REDIS_HOST},REDIS_PORT=${_REDIS_PORT}" \
+          --vpc-egress=private-ranges-only \
+          --set-env-vars "FLASK_ENV=production,DB_HOST=${_CLOUD_SQL_PRIVATE_IP},DB_PORT=5432,DB_USER=${_DB_USER},DB_NAME=${_DB_NAME},REDIS_HOST=${_REDIS_HOST},REDIS_PORT=${_REDIS_PORT}" \
           --update-secrets "DB_PASSWORD=db-password:latest,REDIS_PASSWORD=redis-password:latest,SECRET_KEY=flask-key:latest,JWT_SECRET_KEY=jwt-key:latest"
 
   # 4. (Re)create and run migration job
@@ -34,21 +31,18 @@ steps:
       - "-c"
       - |
         set -e
-        MIGRATE_JOB_EXISTS=$(gcloud run jobs describe habcube-migrate --region "${_REGION}" --format='value(name)' || true)
-        if [ -n "$MIGRATE_JOB_EXISTS" ]; then
-          gcloud run jobs delete habcube-migrate --region "${_REGION}" --quiet
-        fi
-        gcloud run jobs create habcube-migrate \
+        gcloud run jobs delete backend-migrate --region "${_REGION}" --quiet || true
+        gcloud run jobs create backend-migrate \
           --image "${_IMAGE_TAG}" \
           --region "${_REGION}" \
           --service-account "${_SERVICE_ACCOUNT}" \
           --vpc-connector "projects/${_PROJECT_ID}/locations/${_REGION}/connectors/vpc" \
-          --set-cloudsql-instances "${_CLOUD_SQL_CONNECTION_NAME}" \
-          --set-env-vars "FLASK_ENV=production,DB_HOST=/cloudsql/${_CLOUD_SQL_CONNECTION_NAME},DB_PORT=5432,DB_USER=${_DB_USER},DB_NAME=${_DB_NAME},REDIS_HOST=${_REDIS_HOST},REDIS_PORT=${_REDIS_PORT}" \
+          --vpc-egress=private-ranges-only \
+          --set-env-vars "FLASK_ENV=production,FLASK_APP=wsgi:app,DB_HOST=${_CLOUD_SQL_PRIVATE_IP},DB_PORT=5432,DB_USER=${_DB_USER},DB_NAME=${_DB_NAME},REDIS_HOST=${_REDIS_HOST},REDIS_PORT=${_REDIS_PORT}" \
           --update-secrets "DB_PASSWORD=db-password:latest,REDIS_PASSWORD=redis-password:latest,SECRET_KEY=flask-key:latest,JWT_SECRET_KEY=jwt-key:latest" \
           --command "flask" --args "db","upgrade" \
-          --task-timeout 5m
-        gcloud run jobs execute habcube-migrate --region "${_REGION}" --wait
+          --task-timeout 10m
+        gcloud run jobs execute backend-migrate --region "${_REGION}" --wait
 
   # 5. (Re)create and run seed job
   - name: "gcr.io/google.com/cloudsdktool/cloud-sdk"
@@ -57,29 +51,29 @@ steps:
       - "-c"
       - |
         set -e
-        SEED_JOB_EXISTS=$(gcloud run jobs describe habcube-seed --region "${_REGION}" --format='value(name)' || true)
-        if [ -n "$SEED_JOB_EXISTS" ]; then
-          gcloud run jobs delete habcube-seed --region "${_REGION}" --quiet
-        fi
-        gcloud run jobs create habcube-seed \
+        gcloud run jobs delete backend-seed --region "${_REGION}" --quiet || true
+        gcloud run jobs create backend-seed \
           --image "${_IMAGE_TAG}" \
           --region "${_REGION}" \
           --service-account "${_SERVICE_ACCOUNT}" \
           --vpc-connector "projects/${_PROJECT_ID}/locations/${_REGION}/connectors/vpc" \
-          --set-cloudsql-instances "${_CLOUD_SQL_CONNECTION_NAME}" \
-          --set-env-vars "FLASK_ENV=production,DB_HOST=/cloudsql/${_CLOUD_SQL_CONNECTION_NAME},DB_PORT=5432,DB_USER=${_DB_USER},DB_NAME=${_DB_NAME},REDIS_HOST=${_REDIS_HOST},REDIS_PORT=${_REDIS_PORT}" \
+          --vpc-egress=private-ranges-only \
+          --set-env-vars "FLASK_ENV=production,FLASK_APP=wsgi:app,DB_HOST=${_CLOUD_SQL_PRIVATE_IP},DB_PORT=5432,DB_USER=${_DB_USER},DB_NAME=${_DB_NAME},REDIS_HOST=${_REDIS_HOST},REDIS_PORT=${_REDIS_PORT}" \
           --update-secrets "DB_PASSWORD=db-password:latest,REDIS_PASSWORD=redis-password:latest,SECRET_KEY=flask-key:latest,JWT_SECRET_KEY=jwt-key:latest" \
           --command "flask" --args "seed" \
-          --task-timeout 5m
-        gcloud run jobs execute habcube-seed --region "${_REGION}" --wait
+          --task-timeout 10m
+        gcloud run jobs execute backend-seed --region "${_REGION}" --wait
 
 substitutions:
   _PROJECT_ID: "iot2025-475717"
   _REGION: "europe-west1"
-  _IMAGE_TAG: "europe-west1-docker.pkg.dev/iot2025-475717/habcube/habcube-backend:latest"
+  _IMAGE_TAG: "europe-west1-docker.pkg.dev/iot2025-475717/cloud-run-source-deploy/habcube-backend:latest"
   _SERVICE_ACCOUNT: "cloud-run-service-account@iot2025-475717.iam.gserviceaccount.com"
-  _CLOUD_SQL_CONNECTION_NAME: "iot2025-475717:europe-west1:postgres"
+  _CLOUD_SQL_PRIVATE_IP: "10.105.42.17"
   _DB_USER: "admin"
   _DB_NAME: "habcube"
-  _REDIS_HOST: "10.0.0.3"
+  _REDIS_HOST: "10.105.55.227"
   _REDIS_PORT: "6379"
+
+options:
+  logging: CLOUD_LOGGING_ONLY
