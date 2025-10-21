@@ -69,7 +69,7 @@ substitutions:
   _REGION: "europe-west1"
   _IMAGE_TAG: "europe-west1-docker.pkg.dev/iot2025-475717/cloud-run-source-deploy/habcube-backend:latest"
   _SERVICE_ACCOUNT: "cloud-run-service-account@iot2025-475717.iam.gserviceaccount.com"
-  _CLOUD_SQL_PRIVATE_IP: "10.105.42.17"
+  _CLOUD_SQL_PRIVATE_IP: "10.45.0.3"
   _DB_USER: "admin"
   _DB_NAME: "habcube"
   _REDIS_HOST: "10.105.55.227"
