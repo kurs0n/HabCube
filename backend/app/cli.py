@@ -22,7 +22,7 @@ def seed_db():
     frequencies = [freq.name for freq in FrequencyType]  # Use enum names (uppercase)
     colors = ["red", "blue", "green", "yellow", "purple", "orange", "gray"]
 
-    for i in range(1, 51):
+    for i in range(1, 61):
         freq = random.choice(frequencies)
         habit = Habit(
             name=f"Habit {i}",
