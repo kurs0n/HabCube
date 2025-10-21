@@ -1,8 +1,7 @@
-# (Re)create migration job for Cloud Run
 create_migration_job() {
     log_info "Tworzenie/aktualizacja zadania migracji Cloud Run..."
 
-    IMAGE_TAG="${REGION}-docker.pkg.dev/${PROJECT_ID}/iot2025-475717/habcube-backend:latest"
+    IMAGE_TAG="${REGION}-docker.pkg.dev/${PROJECT_ID}/habcube/habcube-backend:latest"
     SERVICE_ACCOUNT="${SERVICE_ACCOUNT:-cloud-run-service-account@${PROJECT_ID}.iam.gserviceaccount.com}"
     VPC_CONNECTOR_FULL_PATH="projects/${PROJECT_ID}/locations/${REGION}/connectors/vpc"
 
@@ -189,7 +188,10 @@ test_health() {
 
     sleep 5  # Poczekaj aż serwis się uruchomi
 
-    HEALTH_RESPONSE=$(curl -s "${SERVICE_URL}/health")
+    log_info "Pobieranie tokena uwierzytelniającego..."
+    ID_TOKEN=$(gcloud auth print-identity-token)
+
+    HEALTH_RESPONSE=$(curl -s -H "Authorization: Bearer ${ID_TOKEN}" "${SERVICE_URL}/health")
 
     echo "$HEALTH_RESPONSE" | jq . || echo "$HEALTH_RESPONSE"
 
@@ -254,6 +256,43 @@ show_logs() {
         --limit=50
 }
 
+# Generate service account key for API access
+generate_api_key() {
+    log_info "Generowanie klucza Service Account dla API..."
+
+    SA_NAME="api-client"
+    SA_EMAIL="${SA_NAME}@${PROJECT_ID}.iam.gserviceaccount.com"
+    KEY_FILE="./service-account-key.json"
+
+    # Check if SA exists, create if not
+    if ! gcloud iam service-accounts describe "$SA_EMAIL" &>/dev/null; then
+        log_info "Tworzenie Service Account: $SA_NAME"
+        gcloud iam service-accounts create "$SA_NAME" \
+            --display-name="API Client for HabCube" \
+            --project="$PROJECT_ID"
+    fi
+
+    # Grant Cloud Run Invoker role
+    log_info "Nadawanie uprawnień Cloud Run Invoker..."
+    gcloud run services add-iam-policy-binding habcube-backend \
+        --region="$REGION" \
+        --member="serviceAccount:${SA_EMAIL}" \
+        --role="roles/run.invoker"
+
+    # Generate key
+    log_info "Generowanie klucza JSON..."
+    gcloud iam service-accounts keys create "$KEY_FILE" \
+        --iam-account="$SA_EMAIL"
+
+    log_info "✓ Klucz wygenerowany: $KEY_FILE"
+    log_warn "UWAGA: Przechowuj ten plik bezpiecznie i NIE commituj do Git!"
+    log_info ""
+    log_info "Aby użyć tego klucza:"
+    log_info "  export GOOGLE_APPLICATION_CREDENTIALS=\"$(pwd)/$KEY_FILE\""
+    log_info "  TOKEN=\$(gcloud auth print-identity-token --impersonate-service-account=$SA_EMAIL)"
+    log_info "  curl -H \"Authorization: Bearer \$TOKEN\" <URL>"
+}
+
 # Main menu
 main_menu() {
     echo ""
@@ -272,8 +311,9 @@ main_menu() {
     echo "  8) Wyjście"
     echo "  9) (Re)utwórz zadanie migracji Cloud Run"
     echo " 10) Zaseeduj bazę danych przykładowymi danymi"
+    echo " 11) Wygeneruj klucz Service Account dla API"
     echo ""
-    read -p "Opcja [1-10]: " choice
+    read -p "Opcja [1-11]: " choice
 
     case $choice in
         1)
@@ -344,6 +384,13 @@ main_menu() {
             validate_env
             configure_gcloud
             seed_database
+            ;;
+        11)
+            check_requirements
+            load_env
+            validate_env
+            configure_gcloud
+            generate_api_key
             ;;
         *)
             log_error "Nieprawidłowa opcja"

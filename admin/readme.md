@@ -1,0 +1,1 @@
+Ten skrypt tylko dla admina (A.D) bo trza mieć uprawnienia i credensziale.

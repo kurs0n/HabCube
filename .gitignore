@@ -23,6 +23,10 @@ wheels/
 .installed.cfg
 *.egg
 
+# Google Cloud credentials
+service-account-key.json
+*-key.json
+
 # Virtual environments
 venv/
 env/

@@ -43,7 +43,7 @@ steps:
           --region "${_REGION}" \
           --service-account "${_SERVICE_ACCOUNT}" \
           --vpc-connector "projects/${_PROJECT_ID}/locations/${_REGION}/connectors/vpc" \
-          --add-cloudsql-instances "${_CLOUD_SQL_CONNECTION_NAME}" \
+          --set-cloudsql-instances "${_CLOUD_SQL_CONNECTION_NAME}" \
           --set-env-vars "FLASK_ENV=production,DB_HOST=/cloudsql/${_CLOUD_SQL_CONNECTION_NAME},DB_PORT=5432,DB_USER=${_DB_USER},DB_NAME=${_DB_NAME},REDIS_HOST=${_REDIS_HOST},REDIS_PORT=${_REDIS_PORT}" \
           --update-secrets "DB_PASSWORD=db-password:latest,REDIS_PASSWORD=redis-password:latest,SECRET_KEY=flask-key:latest,JWT_SECRET_KEY=jwt-key:latest" \
           --command "flask" --args "db","upgrade" \
@@ -66,7 +66,7 @@ steps:
           --region "${_REGION}" \
           --service-account "${_SERVICE_ACCOUNT}" \
           --vpc-connector "projects/${_PROJECT_ID}/locations/${_REGION}/connectors/vpc" \
-          --add-cloudsql-instances "${_CLOUD_SQL_CONNECTION_NAME}" \
+          --set-cloudsql-instances "${_CLOUD_SQL_CONNECTION_NAME}" \
           --set-env-vars "FLASK_ENV=production,DB_HOST=/cloudsql/${_CLOUD_SQL_CONNECTION_NAME},DB_PORT=5432,DB_USER=${_DB_USER},DB_NAME=${_DB_NAME},REDIS_HOST=${_REDIS_HOST},REDIS_PORT=${_REDIS_PORT}" \
           --update-secrets "DB_PASSWORD=db-password:latest,REDIS_PASSWORD=redis-password:latest,SECRET_KEY=flask-key:latest,JWT_SECRET_KEY=jwt-key:latest" \
           --command "flask" --args "seed" \
@@ -76,8 +76,8 @@ steps:
 substitutions:
   _PROJECT_ID: "iot2025-475717"
   _REGION: "europe-west1"
-  _IMAGE_TAG: "europe-west1-docker.pkg.dev/habcube/habcube/habcube-backend:latest"
-  _SERVICE_ACCOUNT: "cloud-run-service-account@habcube.iam.gserviceaccount.com"
+  _IMAGE_TAG: "europe-west1-docker.pkg.dev/iot2025-475717/habcube/habcube-backend:latest"
+  _SERVICE_ACCOUNT: "cloud-run-service-account@iot2025-475717.iam.gserviceaccount.com"
   _CLOUD_SQL_CONNECTION_NAME: "iot2025-475717:europe-west1:postgres"
   _DB_USER: "admin"
   _DB_NAME: "habcube"

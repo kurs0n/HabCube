@@ -220,7 +220,7 @@ make quality   # all ekskljuziw
 
 ---
 
-## Deployment na Google Cloud
+## Deployment na Google Cloud (TO TYLKO DLA ADMINA A.D)
 
 Aplikacja jest gotowa do wdrożenia na Google Cloud Platform z następującymi serwisami:
 
@@ -230,7 +230,7 @@ Aplikacja jest gotowa do wdrożenia na Google Cloud Platform z następującymi s
 - **Secret Manager** - Bezpieczne przechowywanie credentials
 - **Artifact Registry** - Rejestr obrazów Docker
 
-### Szybki start (dla local dev)
+### Szybki start (dla local dev - TYLKO ADMIN A.D)
 
 1. **Przygotuj plik konfiguracyjny:**
 
@@ -245,6 +245,23 @@ Aplikacja jest gotowa do wdrożenia na Google Cloud Platform z następującymi s
    ./deploy-gcloud.sh
    ```
 
+### Korzystanie z API
+
+1. gcloud auth login
+
+2. Wygenerować TOKENA
+
+```
+    TOKEN=$(gcloud auth print-identity-token)
+  ```
+
+3. Można Curlować
+
+```
+  curl -H "Authorization: Bearer $TOKEN" https://<BACKEND_PUBLIC_ADDRESS>/api/v1/habits
+  ```
+
+Powinno banglać
 
 ---
 
