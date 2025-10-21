@@ -230,22 +230,8 @@ Aplikacja jest gotowa do wdrożenia na Google Cloud Platform z następującymi s
 - **Secret Manager** - Bezpieczne przechowywanie credentials
 - **Artifact Registry** - Rejestr obrazów Docker
 
-### Szybki start (dla local dev - TYLKO ADMIN A.D)
 
-1. **Przygotuj plik konfiguracyjny:**
-
-   ```bash
-   cp .env.gcloud.template .env.gcloud
-   # Edytuj .env.gcloud i wypełnij wszystkie wartości
-   ```
-
-2. **Uruchom skrypt deployment:**
-
-   ```bash
-   ./deploy-gcloud.sh
-   ```
-
-### Korzystanie z API
+### Korzystanie z API (GCLOUD)
 
 1. gcloud auth login
 
