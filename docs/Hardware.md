@@ -1,6 +1,7 @@
 # Hardware
 
-Board: SiPy ESP32 14dBm (borrowed)
+<del>Board: SiPy ESP32 14dBm (borrowed)</del>
+Board: [Raspberry pi pico WH](https://botland.com.pl/moduly-i-zestawy-do-raspberry-pi-pico/21575-raspberry-pi-pico-wh-rp2040-arm-cortex-m0-cyw43439-wifi-ze-zlaczami-5056561800196.html)
 Gyroscope: SparkFun MPU-9250 9DoF(borrowed)
 LCDs: OLED SCREEN 1,3" I2C x2(borrowed) 
 Multiplexer:[DFRobot Gravity](https://botland.com.pl/gravity-konwertery-i-przetworniki/12628-dfrobot-gravity-cyfrowy-multiplekser-i2c-8-kanalowy-6959420914173.html)
@@ -10,7 +11,7 @@ Box: cardboard box?
 
 ## Sheets links
 
-Board: https://docs.pycom.io/gitbook/assets/specsheets/Pycom_002_Specsheets_SiPy_v2.pdf
+Board: https://datasheets.raspberrypi.com/rp2040/rp2040-datasheet.pdf, https://datasheets.raspberrypi.com/picow/pico-w-datasheet.pdf
 Multiplexer: https://github.com/Arduinolibrary/Gravity_Digital_I2C_Multiplexer/raw/master/TCA9548A_datasheet.pdf
 Gyroscope:  https://botland.com.pl/index.php?controller=attachment&id_attachment=2716
 Switches: -
