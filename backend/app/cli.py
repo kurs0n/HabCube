@@ -13,12 +13,24 @@ from app.models.habit import Habit, HabitStatistics
 @click.command("seed")
 @with_appcontext
 def seed_db():
-    """Seed the database with sample data"""
-    if db.session.query(Habit).count() > 0:
-        click.echo("Database already has data. Skipping seeding.")
-        return
+    """Seed the database with sample data (always clears existing data first)"""
+    existing_count = db.session.query(Habit).count()
 
-    click.echo("Seeding database with 50 sample habits...")
+    if existing_count > 0:
+        click.echo(f"Clearing {existing_count} existing habits...")
+        db.session.query(HabitStatistics).delete()
+        db.session.query(Habit).delete()
+        db.session.commit()
+        click.echo("✓ Existing data cleared.")
+
+    # Reset auto-increment sequences to start from 1
+    click.echo("Resetting ID sequences...")
+    db.session.execute(db.text("ALTER SEQUENCE habits_id_seq RESTART WITH 1"))
+    db.session.execute(db.text("ALTER SEQUENCE habit_statistics_id_seq RESTART WITH 1"))
+    db.session.commit()
+    click.echo("✓ ID sequences reset.")
+
+    click.echo("Seeding database with sample habits...")
     frequencies = [freq.name for freq in FrequencyType]  # Use enum names (uppercase)
     colors = ["red", "blue", "green", "yellow", "purple", "orange", "gray"]
 
@@ -46,7 +58,7 @@ def seed_db():
         db.session.add(stats)
 
     db.session.commit()
-    click.echo("✓ Seeded 50 habits with statistics.")
+    click.echo("✓ Seeded habits with statistics.")
 
 
 def init_app(app):

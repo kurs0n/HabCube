@@ -31,17 +31,14 @@ steps:
       - "-c"
       - |
         set -e
-        MIGRATE_JOB_EXISTS=$$(gcloud run jobs describe backend-migrate --region "${_REGION}" --format='value(name)' || true)
-        if [ -n "$$MIGRATE_JOB_EXISTS" ]; then
-          gcloud run jobs delete backend-migrate --region "${_REGION}" --quiet
-        fi
+        gcloud run jobs delete backend-migrate --region "${_REGION}" --quiet || true
         gcloud run jobs create backend-migrate \
           --image "${_IMAGE_TAG}" \
           --region "${_REGION}" \
           --service-account "${_SERVICE_ACCOUNT}" \
           --vpc-connector "projects/${_PROJECT_ID}/locations/${_REGION}/connectors/vpc" \
           --vpc-egress=private-ranges-only \
-          --set-env-vars "FLASK_ENV=production,DB_HOST=${_CLOUD_SQL_PRIVATE_IP},DB_PORT=5432,DB_USER=${_DB_USER},DB_NAME=${_DB_NAME},REDIS_HOST=${_REDIS_HOST},REDIS_PORT=${_REDIS_PORT}" \
+          --set-env-vars "FLASK_ENV=production,FLASK_APP=wsgi:app,DB_HOST=${_CLOUD_SQL_PRIVATE_IP},DB_PORT=5432,DB_USER=${_DB_USER},DB_NAME=${_DB_NAME},REDIS_HOST=${_REDIS_HOST},REDIS_PORT=${_REDIS_PORT}" \
           --update-secrets "DB_PASSWORD=db-password:latest,REDIS_PASSWORD=redis-password:latest,SECRET_KEY=flask-key:latest,JWT_SECRET_KEY=jwt-key:latest" \
           --command "flask" --args "db","upgrade" \
           --task-timeout 10m
@@ -54,17 +51,14 @@ steps:
       - "-c"
       - |
         set -e
-        SEED_JOB_EXISTS=$$(gcloud run jobs describe backend-seed --region "${_REGION}" --format='value(name)' || true)
-        if [ -n "$$SEED_JOB_EXISTS" ]; then
-          gcloud run jobs delete backend-seed --region "${_REGION}" --quiet
-        fi
+        gcloud run jobs delete backend-seed --region "${_REGION}" --quiet || true
         gcloud run jobs create backend-seed \
           --image "${_IMAGE_TAG}" \
           --region "${_REGION}" \
           --service-account "${_SERVICE_ACCOUNT}" \
           --vpc-connector "projects/${_PROJECT_ID}/locations/${_REGION}/connectors/vpc" \
           --vpc-egress=private-ranges-only \
-          --set-env-vars "FLASK_ENV=production,DB_HOST=${_CLOUD_SQL_PRIVATE_IP},DB_PORT=5432,DB_USER=${_DB_USER},DB_NAME=${_DB_NAME},REDIS_HOST=${_REDIS_HOST},REDIS_PORT=${_REDIS_PORT}" \
+          --set-env-vars "FLASK_ENV=production,FLASK_APP=wsgi:app,DB_HOST=${_CLOUD_SQL_PRIVATE_IP},DB_PORT=5432,DB_USER=${_DB_USER},DB_NAME=${_DB_NAME},REDIS_HOST=${_REDIS_HOST},REDIS_PORT=${_REDIS_PORT}" \
           --update-secrets "DB_PASSWORD=db-password:latest,REDIS_PASSWORD=redis-password:latest,SECRET_KEY=flask-key:latest,JWT_SECRET_KEY=jwt-key:latest" \
           --command "flask" --args "seed" \
           --task-timeout 10m
@@ -75,7 +69,7 @@ substitutions:
   _REGION: "europe-west1"
   _IMAGE_TAG: "europe-west1-docker.pkg.dev/iot2025-475717/cloud-run-source-deploy/habcube-backend:latest"
   _SERVICE_ACCOUNT: "cloud-run-service-account@iot2025-475717.iam.gserviceaccount.com"
-  _CLOUD_SQL_PRIVATE_IP: "10.105.42.17"
+  _CLOUD_SQL_PRIVATE_IP: "10.45.0.3"
   _DB_USER: "admin"
   _DB_NAME: "habcube"
   _REDIS_HOST: "10.105.55.227"

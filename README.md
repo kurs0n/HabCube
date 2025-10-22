@@ -217,6 +217,53 @@ make format    # Auto-formatowanie
 make test      # Uruchom testy
 make quality   # all ekskljuziw
 ```
+---
+# Baza danych
+### Table: `habits`
+Main table containing defined habits.
+
+| Column | Type | Description |
+|--------|------|-------------|
+| `id` | INTEGER PRIMARY KEY | Unique habit identifier |
+| `name` | VARCHAR(100) | Name of the habit (e.g., "Drink water") |
+| `description` | TEXT | Optional description or motivation |
+| `deadline_time` | TIME | Deadline for completing the habit (e.g., 21:00) |
+| `frequency` | ENUM('daily', 'weekly', 'custom') | How often the habit should be repeated |
+| `active` | BOOLEAN DEFAULT TRUE | Whether the habit is active |
+| `created_at` | TIMESTAMP DEFAULT CURRENT_TIMESTAMP | When the habit was created |
+| `color` | VARCHAR(10) | LED or OLED color associated with the habit |
+
+
+### Table: `habit_tasks`
+Each record represents one scheduled occurrence of a habit (e.g., daily task).  
+Used for history and streak tracking.
+
+| Column | Type | Description |
+|--------|------|-------------|
+| `id` | INTEGER PRIMARY KEY | Unique task identifier |
+| `habit_id` | INTEGER REFERENCES habits(id) | Related habit |
+| `date` | DATE | Date for this habit occurrence |
+| `completed` | BOOLEAN DEFAULT FALSE | Whether it was completed |
+| `completion_time` | TIMESTAMP NULL | When it was completed |
+
+
+### Table: `habit_statistics`
+Aggregated habit statistics, updated after each completion.
+
+| Column | Type | Description |
+|--------|------|-------------|
+| `id` | INTEGER PRIMARY KEY | Unique statistics record |
+| `habit_id` | INTEGER REFERENCES habits(id) | Related habit |
+| `total_completions` | INTEGER DEFAULT 0 | Total number of completions |
+| `current_streak` | INTEGER DEFAULT 0 | Current streak of consecutive days |
+| `best_streak` | INTEGER DEFAULT 0 | Longest streak achieved |
+| `success_rate` | FLOAT DEFAULT 0 | Percentage of successful completions |
+| `last_completed` | DATE NULL | Last completion date |
+| `updated_at` | TIMESTAMP DEFAULT CURRENT_TIMESTAMP | Last update time |
+
+## Diagram ERD:
+
+<img width="578" height="487" alt="Image" src="https://github.com/user-attachments/assets/62d5e32d-f056-4b91-b551-dfae8bc929b0" />
 
 ---
 
