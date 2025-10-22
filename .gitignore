@@ -23,6 +23,10 @@ wheels/
 .installed.cfg
 *.egg
 
+# Google Cloud credentials
+service-account-key.json
+*-key.json
+
 # Virtual environments
 venv/
 env/
@@ -51,8 +55,15 @@ coverage.xml
 .DS_Store
 
 # Environment variables
+.env
 .env.local
 .env.*.local
+.env.gcloud
+
+# Google Cloud
+.service_url
+cloud_sql_proxy
+.gcloud/
 
 # Database
 *.db

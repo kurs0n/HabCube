@@ -220,7 +220,58 @@ make quality   # all ekskljuziw
 
 ---
 
+## Deployment na Google Cloud (TO TYLKO DLA ADMINA A.D)
+
+Aplikacja jest gotowa do wdrożenia na Google Cloud Platform z następującymi serwisami:
+
+- **Cloud Run** - Serverless backend Flask
+- **Cloud SQL for PostgreSQL** - Zarządzana baza danych
+- **Memorystore for Redis** - Zarządzany cache
+- **Secret Manager** - Bezpieczne przechowywanie credentials
+- **Artifact Registry** - Rejestr obrazów Docker
+
+
+### Korzystanie z API (GCLOUD)
+
+1. gcloud auth login
+
+2. Wygenerować TOKENA
+
+```
+    TOKEN=$(gcloud auth print-identity-token)
+  ```
+
+3. Można Curlować
+
+```
+  curl -H "Authorization: Bearer $TOKEN" https://<BACKEND_PUBLIC_ADDRESS>/api/v1/habits
+  ```
+
+Powinno banglać
+
+---
+
 ## Changelog
+
+### 2025-10-20
+
+**Google Cloud Deployment Ready**
+
+- **Backend Configuration**
+
+  - Zaktualizowano `config.py` do obsługi Cloud SQL (127.0.0.1) i Memorystore
+  - Dodano wsparcie dla zmiennych środowiskowych: `DB_HOST`, `DB_USER`, `REDIS_HOST`, etc.
+  - Zachowano kompatybilność z lokalnym Docker Compose
+
+- **Dockerfile Improvements**
+
+  - Dodano wsparcie dla zmiennej `PORT` (wymaganej przez Cloud Run)
+  - Zaktualizowano CMD do używania `${PORT:-5000}`
+  - Health check używa dynamicznego portu
+
+- **Deployment Tools**
+  - Utworzono `deploy-gcloud.sh` - interaktywny skrypt deployment
+  - Utworzono `.env.gcloud.template` - szablon konfiguracji dla GCP
 
 ### 2025-10-15
 

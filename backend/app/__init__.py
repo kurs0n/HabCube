@@ -59,4 +59,9 @@ def create_app(config_name=None):
     app.register_blueprint(health_bp)
     app.register_blueprint(api_bp, url_prefix="/api/v1")
 
+    # Register CLI commands
+    from app import cli
+
+    cli.init_app(app)
+
     return app

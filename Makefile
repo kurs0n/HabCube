@@ -11,6 +11,9 @@ build: ## Zbuduj obrazy Docker
 
 up: ## Uruchom wszystkie serwisy
 	docker-compose up -d
+	@echo "Waiting for backend to be ready..."
+	@sleep 3
+	@docker-compose exec backend flask seed || echo "Database already seeded or backend not ready yet"
 
 down: ## Zatrzymaj wszystkie serwisy
 	docker-compose down
@@ -109,13 +112,20 @@ db-restore: ## Przywróć bazę danych z backupu (użyj: make db-restore FILE=ba
 	fi
 	cat $(FILE) | docker-compose exec -T postgres psql -U habcube_user habcube
 
+db-seed: ## Wypełnij bazę danych przykładowymi danymi
+	docker-compose exec backend flask seed
+
 # Setup
-init: build up ## Inicjalizacja projektu (build + up)
+init: build up migrate-up ## Inicjalizacja projektu (build + up + migrations)
 	@echo ""
 	@echo "Projekt zainicjalizowany"
 	@echo "Backend: http://localhost:5000"
 	@echo "Adminer: http://localhost:8080"
 	@echo ""
+
+# Setup with seed data
+init-dev: init db-seed ## Inicjalizacja projektu z przykładowymi danymi
+	@echo "✓ Projekt zainicjalizowany z przykładowymi danymi"
 
 # Monitoring
 health: ## Sprawdź health check backendu
@@ -141,3 +151,22 @@ fresh: ## Świeży start (usuwa dane!)
 	docker-compose down -v
 	docker-compose build
 	docker-compose up -d
+
+# Google Cloud deployment
+gcloud-setup: ## Sprawdź wymagania dla GCP deployment
+	@echo "Sprawdzanie wymagań dla Google Cloud..."
+	@command -v gcloud >/dev/null 2>&1 || { echo "❌ gcloud CLI nie jest zainstalowane"; exit 1; }
+	@command -v docker >/dev/null 2>&1 || { echo "❌ Docker nie jest zainstalowany"; exit 1; }
+	@echo "✓ gcloud CLI zainstalowane"
+	@echo "✓ Docker zainstalowany"
+	@echo ""
+	@echo "Następne kroki:"
+	@echo "1. Skopiuj .env.gcloud.template do .env.gcloud"
+	@echo "2. Wypełnij wartości w .env.gcloud"
+	@echo "3. Uruchom: ./deploy-gcloud.sh"
+
+gcloud-deploy: ## Uruchom interaktywny deployment na Google Cloud
+	./deploy-gcloud.sh
+
+gcloud-docs: ## Otwórz dokumentację deployment na GCP
+	@cat GOOGLE_CLOUD_DEPLOYMENT.md | less
