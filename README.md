@@ -266,6 +266,125 @@ Aggregated habit statistics, updated after each completion.
 <img width="578" height="487" alt="Image" src="https://github.com/user-attachments/assets/62d5e32d-f056-4b91-b551-dfae8bc929b0" />
 
 ---
+# Przepływ danych
+### 1. Konfiguracja i Tworzenie Nowego Nawyku
+
+```mermaid
+graph TD
+    A[START: Użytkownik chce utworzyć nowy nawyk] --> B(Aplikacja Mobilna: POST /api/v1/habits z JSON);
+
+    subgraph Walidacja Danych i DTO
+        B --> C1{Backend: Walidacja Format deadline_time HH:MM};
+        C1 -- Błąd formatu / Niepoprawna częstotliwość --> Z400[Zwróć 400: Invalid Input];
+        C1 -- OK --> C2{Backend: Walidacja frequency FrequencyType};
+        C2 -- OK --> D(Backend: Utworzenie i walidacja CreateHabitDTO);
+    end
+
+    D -- Błąd walidacji DTO --> Z400;
+    D -- Walidacja OK --> E(Backend: Utworzenie obiektu Habit);
+
+    subgraph Transakcja Bazodanowa
+        E --> F1(DB: Dodaj Habit flush po ID);
+        F1 --> F2(DB: Utwórz HabitStatistics z habit_id);
+        F2 --> G(DB: Commit - Zapisz oba rekordy);
+        G -- Błąd Commit/DB --> Z500[DB: Rollback i Zwróć 500];
+    end
+
+    G --> H(Backend: Zwróć 201 Created);
+    H --> I(Aplikacja Mobilna: Potwierdzenie sukcesu);
+    
+    I --> J{Asynchronicznie: Backend wysyła konfigurację do Kostki};
+    J --> K(Intelligent Cube: Aktualizacja Ekranów/Lokalnej Konfiguracji);
+    K --> L[END: Nowy nawyk gotowy];
+    
+    Z400 --> ZK[END: Proces zakończony błędem];
+    Z500 --> ZK;
+```
+
+### 2. Wykonanie i Potwierdzenie Nawyku (Interakcja z Kostką)
+```mermaid
+graph TD
+    A[START: Użytkownik obraca i naciska Tact Switch] --> B(Intelligent Cube: Wykrycie ściany i wysłanie POST /api/v1/habits/id/complete);
+    B --> C(Backend: Pobierz Habit - habit_id);
+    C -- Brak Habitu --> Z404[Zwróć 404: Habit not found];
+
+    subgraph Weryfikacja i Task
+        C -- Habit OK --> D{Backend: Sprawdź, czy nawyk ukończony dzisiaj?};
+        D -- Tak --> Z400[Zwróć 400: Already completed today];
+        D -- Nie --> E(Backend: Utwórz HabitTask i dodaj do sesji);
+    end
+
+    subgraph Aktualizacja Statystyk
+        E --> F(Backend: Pobierz/Utwórz HabitStatistics);
+        F --> G(Backend: Zaktualizuj total_completions, last_completed);
+        G --> H{Backend: Sprawdź poprzednie ukończenie Task};
+        H -- Różnica 1 dzień --> I(current_streak += 1);
+        H -- Inny przypadek --> J(current_streak = 1);
+        I --> K(Backend: Aktualizuj Best Streak);
+        J --> K;
+    end
+
+    K --> L(DB: Commit - Zapisz Task i Statystyki);
+    L -- Błąd Commit/DB --> Z500[DB: Rollback i Zwróć 500];
+    
+    L --> M(Backend: Zwróć 200 OK);
+    M --> N(Intelligent Cube: Uruchom Motywacyjny Feedback LEDs, Sound);
+    N --> O[END: Potwierdzenie wykonania];
+
+    Z404 --> ZK[END: Błąd];
+    Z400 --> ZK;
+    Z500 --> ZK;
+```
+
+### 3. Monitorowanie Postępów i Statystyk
+```mermaid
+graph TD
+    A[START: Użytkownik otwiera Aplikację Mobilną] --> B{Użytkownik: Czy chce zobaczyć listę czy szczegóły?};
+
+    subgraph Lista Nawykow
+        B -- Lista (GET /habits) --> B1(Aplikacja Mobilna: GET /api/v1/habits);
+        B1 --> B2(Backend: Habit.query.all);
+        B2 -- Błąd DB --> Z500_G[Zwróć 500];
+        B2 -- OK --> B3(Backend: Konwersja do listy Habit DTO);
+        B3 --> B4(Aplikacja Mobilna: Wyświetlenie Listy);
+    end
+
+    subgraph Szczegoly Nawyku
+        B -- Szczegóły (GET /habits/id) --> C1(Aplikacja Mobilna: GET /api/v1/habits/id);
+        C1 --> C2(Backend: Pobierz Habit z DB);
+        C2 -- Habit nie znaleziony --> Z404_G[Zwróć 404];
+        C2 -- OK --> C3(Backend: Dołącz HabitStatistics);
+        C3 --> C4(Backend: Zwróć Habit DTO ze Statystykami);
+        C4 --> C5(Aplikacja Mobilna: Wyświetlenie Statystyk i Historii);
+    end
+    
+    C5 --> K[END: Dane wyświetlone];
+    B4 --> K;
+    Z500_G --> K_E[END: Błąd];
+    Z404_G --> K_E;
+```
+
+## 4. Szczegółowe Funkcjonalności Systemu HabCube
+### 4.1 Funkcjonalności Aplikacji Mobilnej (UI/Frontend)
+| Lp. | Kategoria | Funkcjonalność | Opis |
+| :--- | :--- | :--- | :--- |
+| **A1** | **Zarządzanie Nawykami** | **Tworzenie/Konfiguracja Nawyku** | Umożliwia dodanie nowego nawyku (nazwa, opis), ustawienie **częstotliwości** (`daily`, `weekly`, etc.) oraz opcjonalnego **deadline'u** (`HH:MM`). |
+| **A2** | **Zarządzanie Nawykami** | **Aktywacja Dziennego Zestawu** | Użytkownik **ręcznie aktywuje** listę nawyków, które chce wykonywać danego dnia. Lista ta jest następnie przesyłana do kostki. |
+| **A3** | **Zarządzanie Nawykami** | **Edycja/Usuwanie** | Umożliwia modyfikację parametrów istniejącego nawyku lub jego całkowite usunięcie z systemu. |
+| **A4** | **Monitorowanie** | **Wizualizacja Postępów** | Prezentacja statystyk dla każdego nawyku: **Total Completions**, **Current Streak**, **Best Streak**. |
+| **A5** | **Monitorowanie** | **Historia Ukończeń** | Wyświetlanie szczegółowego kalendarza lub listy zadań (`HabitTask`) z datami i czasem ukończenia. |
+| **A6** | **Interakcja z Kostką** | **Łączenie/Konfiguracja** | Umożliwia połączenie się z kostką w sieci lokalnej oraz **przypisanie nawyku do ekranów** kostki. |
+
+### 4.2 Funkcjonalności Intelligent Cube (Hardware)
+| Lp. | Kategoria | Funkcjonalność | Opis |
+| :--- | :--- | :--- | :--- |
+| **C1** | **Wyświetlanie Stanu** | **Wyświetlanie Nawyków** | **Ekrany OLED** wyświetlają  **aktywny nawyk** na dany dzień, wraz z jego aktualnym statusem. |
+| **C2** | **Interakcja** | **Zmiana Aktywnego Nawyku (Tact Switch)** | **Wciśnięcie przycisku Tact Switch** na aktywnej ścianie powoduje zmianę wyświetlanego nawyku (np. z "Czytanie" na "Bieganie"). |
+| **C3** | **Interakcja** | **Potwierdzenie Ukończenia (Obrót)** | **Obrócenie kostki** na ścianę - wykryty przez **Żyroskop**) jest interpretowane jako potwierdzenie ukończenia zadania. |
+| **C4** | **Motywacja** | **Feedback Zmysłowy** | Po pomyślnym ukończeniu nawyku (C3) kostka dostarcza **Motywacyjny Feedback** ("dopamine hit"): **LEDy** migają, a **Głośnik** odtwarza dźwięk. |
+| **C5** | **Komunikacja** | **Wysyłanie Danych** | Po potwierdzeniu (C3), kostka wysyła żądanie `POST /api/v1/habits/{id}/complete` do Serwera Centralnego, rejestrując wykonanie. |
+| **C6** | **Komunikacja** | **Odbiór Konfiguracji** | Kostka odbiera z Serwera Centralnego listę aktywnych nawyków na dany dzień i dynamicznie aktualizuje swoje wyświetlacze. |
+---
 
 ## Deployment na Google Cloud (TO TYLKO DLA ADMINA A.D)
 
