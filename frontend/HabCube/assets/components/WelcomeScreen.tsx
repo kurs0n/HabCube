@@ -1,14 +1,28 @@
 import React from "react";
 import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
+import { NativeStackNavigationProp } from "@react-navigation/native-stack";
+import { RootStackParamList } from "../../App";
 
-const WelcomeScreen: React.FC = () => {
+type WelcomeScreenNavigationProp = NativeStackNavigationProp<
+  RootStackParamList,
+  "Welcome"
+>;
+
+type Props = {
+  navigation: WelcomeScreenNavigationProp;
+};
+
+const WelcomeScreen: React.FC<Props> = ({ navigation }) => {
+  const handleStart = () => {
+    navigation.navigate("MainPage");
+  };
 
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Welcome to</Text>
       <Text style={styles.appName}>HabCube</Text>
 
-      <TouchableOpacity style={styles.button}>
+      <TouchableOpacity style={styles.button} onPress={handleStart}>
         <Text style={styles.buttonText}>Start</Text>
       </TouchableOpacity>
     </View>
