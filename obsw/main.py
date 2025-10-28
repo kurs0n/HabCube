@@ -35,38 +35,35 @@ def init():
 
 def loop():
     i2c = I2C(0,sda=Pin(0),scl=Pin(1))
-    control_byte = (1 << 3)
-    i2c.writeto(0x70,bytes([control_byte]))
-    spi = SPI(0, baudrate=1000000)
-    cs = Pin(4, Pin.OUT, value=1)
-    dc = Pin(5, Pin.OUT)
-    rst = Pin(6, Pin.OUT)
+    spi_oled1 = SPI(0, baudrate=1000000, sck=Pin(2),mosi=Pin(3))
+        
+    cs_oled1 = Pin(4, Pin.OUT, value=1)   
+    dc_oled1 = Pin(5, Pin.OUT)
+    rst_oled1 = Pin(6, Pin.OUT)
 
-    display = SH1106_SPI(128, 64, spi, dc, rst, cs, rotate=0, delay=0)   
-    display.sleep(False)
-    display.fill(0)
-    # display.text("piotrek ziobrowski śmierdzi gównem",0,0,1)
-    display.text("piotrek ziobrow",0,0,1)
-    display.show()
-    sleep(4)
-    display.fill(0)
-    display.show()
-    display.text("-ski smierdzi go",0,0,1)
-    display.show()
-    sleep(4)
-    display.fill(0)
-    display.show()
-    display.text("-wnem",0,0,1)
-    display.show()
-    # i2c.writeto(0x70, bytes([1 << 3])) # enable 3 bus on multiplexer
-    # i2c.writeto(0x70, bytes([1 << 0])) # ekrany są zlutownae na SPI!
+    spi_oled2 = SPI(1, baudrate=1000000, sck=Pin(10), mosi=Pin(11))
+    cs_oled2 = Pin(12,  Pin.OUT, value=1)
+    dc_oled2 = Pin(13, Pin.OUT)
+    rst_oled2 = Pin(9, Pin.OUT)
+
+    display_oled1 = SH1106_SPI(128, 64, spi_oled1, dc_oled1, rst_oled1, cs_oled1, rotate=0, delay=0)   
+    display_oled2 = SH1106_SPI(128, 64, spi_oled2, dc_oled2, rst_oled2, cs_oled2, rotate=0, delay=0)
+    display_oled2.sleep(False)
+    display_oled2.fill(0)
+    display_oled2.text('test', 0, 0, 1)
+    display_oled2.show()
+
+    display_oled1.sleep(False)
+    display_oled1.fill(0)
+    display_oled1.text('piotr ziobro', 0, 0, 1)
+    display_oled1.show()
+   
     sensor = MPU9250(i2c)
     print(hex(sensor.whoami))
     while(True):
         print(sensor.acceleration) # (X,Y,Z)
         utime.sleep_ms(1000)
-        music.play_mario_main_theme(buzzer)
-
+        # music.play_mario_main_theme(buzzer)
 
 init()
 loop()
