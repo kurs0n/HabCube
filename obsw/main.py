@@ -57,13 +57,17 @@ def loop():
     display_oled1.fill(0)
     display_oled1.text('piotr ziobro', 0, 0, 1)
     display_oled1.show()
-   
+
+    button1 = Pin(17,Pin.IN, Pin.PULL_UP)
+    button2 = Pin(16,Pin.IN, Pin.PULL_UP)
     sensor = MPU9250(i2c)
     print(hex(sensor.whoami))
     while(True):
         print(sensor.acceleration) # (X,Y,Z)
         utime.sleep_ms(1000)
-        # music.play_mario_main_theme(buzzer)
+        print(button1.value())
+        print(button2.value())
+        music.play_mario_main_theme(buzzer)
 
 init()
 loop()
