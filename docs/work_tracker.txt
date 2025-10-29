@@ -51,3 +51,35 @@ Zadania do zrobienia (TODO)
     Szymon:
         -Projekt formularza do tworzenia nawyku
         -Utworzenie funkcjonalnego main page'a
+
+
+Zadania ukończone (23.10.2025-30.10.2025)
+    Patryk:
+        -Złożenie i przetestowanie sprzętu na płytce stykowej
+        -Przygotowanie IDE i narzędzi do kodowania Raspberry Pico
+        -Testy elementów na płytce stykowej
+        -Finalny schemat elektroniczny
+    Szymon:
+        -Projekt formularza do tworzenia nawyku
+        -Utworzenie funkcjonalnego main page'a
+        -Implementacja ekranow aplikacji mobilnej UI
+    Piotr:
+        -Rozwinięcie projektu kostki 3D o otwory na ekrany, buzzer i inne elementy
+        -Podłączenie Raspberry do WiFi (prosty request i response)
+    Aleks: 
+        -Migracja bazy danych po didaniu nowej tabeli na ikonki
+        -Swagger api docs
+        -Przygotowanie danych testowych w bazie lokalnej i w chmurze
+    Paweł:
+        -Wysokopoziomowy opis całego projektu
+        -Opis wszystkich funkcjonalności zarówno na wersji mobilnej, jak i na kostce
+        -Podłączenie frontendu do backendu - proste wyświetlanie listy nawyków
+Zadania do zrobienia (TODO)
+    Patryk: 
+        -Wyświetlanie obrazków w formie bitmap na ekranach oled
+        -Zaimplementowanie algorytmu dla zyroskopu(wykrycie obrotu kostki)
+        -Prosty fetch z naszego api
+    Szymon, Aleks, Paweł:
+        -Podłączenie frontendu z backendem
+    Piotr:
+        -Zamówienie na kostke 3D

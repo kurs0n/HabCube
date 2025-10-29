@@ -11,7 +11,7 @@ Box: cardboard box?
 ## Sheets links
 
 Board: https://datasheets.raspberrypi.com/rp2040/rp2040-datasheet.pdf, https://datasheets.raspberrypi.com/picow/pico-w-datasheet.pdf
-Multiplexer: https://github.com/Arduinolibrary/Gravity_Digital_I2C_Multiplexer/raw/master/TCA9548A_datasheet.pdf
+<!-- Multiplexer: https://github.com/Arduinolibrary/Gravity_Digital_I2C_Multiplexer/raw/master/TCA9548A_datasheet.pdf -->
 Gyroscope:  https://botland.com.pl/index.php?controller=attachment&id_attachment=2716
 Switches: -
 Passive Buzzer: https://files.seeedstudio.com/products/107020109/document/MLT_8530_datasheet.pdf
