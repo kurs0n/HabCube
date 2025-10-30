@@ -82,4 +82,5 @@ Zadania do zrobienia (TODO)
     Szymon, Aleks, Paweł:
         -Podłączenie frontendu z backendem
     Piotr:
+        -Stworzenie ścianki z przytwierdzeniem na śrubki
         -Zamówienie na kostke 3D
