@@ -17,7 +17,7 @@ import Icon from "react-native-vector-icons/Ionicons";
 
 import DateTimePicker from "@react-native-community/datetimepicker";
 
-import { AVAILABLE_ICONS } from "../../data/icons";
+import { AVAILABLE_ICONS } from "../../assets/data/icons";
 
 type Props = {
   navigation: NativeStackNavigationProp<RootStackParamList, "AddHabit">;

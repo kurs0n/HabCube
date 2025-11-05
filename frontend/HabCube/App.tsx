@@ -1,13 +1,13 @@
 import { StatusBar } from "expo-status-bar";
 import { StyleSheet, Text, View } from "react-native";
 import { SafeAreaProvider } from "react-native-safe-area-context";
-import WelcomeScreen from "./assets/components/WelcomeScreen";
+import WelcomeScreen from "./src/components/WelcomeScreen";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { NavigationContainer } from "@react-navigation/native";
-import MainPageScreen from "./assets/components/MainPage";
-import AddHabitScreen from "./assets/components/AddHabit";
-import FinishedHabitsScreen from "./assets/components/FinishedHabits";
-import HabitsStatsScreen from "./assets/components/HabitsStats";
+import MainPageScreen from "./src/components/MainPage";
+import AddHabitScreen from "./src/components/AddHabit";
+import FinishedHabitsScreen from "./src/components/FinishedHabits";
+import HabitsStatsScreen from "./src/components/HabitsStats";
 
 export type RootStackParamList = {
   Welcome: undefined;
