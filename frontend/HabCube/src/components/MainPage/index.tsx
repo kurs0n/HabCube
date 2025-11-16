@@ -13,6 +13,9 @@ import BottomNavbar from "../BottomNavbar/BottomNavbar";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { RootStackParamList } from "../../../App";
 import Icon from "react-native-vector-icons/Ionicons";
+import { useHabits } from "../../hooks/useHabits";
+import { IHabit } from "../../types/habit.types";
+import { useFocusEffect } from "@react-navigation/native";
 
 type MainPageNavigationProp = NativeStackNavigationProp<
   RootStackParamList,
@@ -22,70 +25,6 @@ type MainPageNavigationProp = NativeStackNavigationProp<
 type Props = {
   navigation: MainPageNavigationProp;
 };
-
-interface ActiveHabit {
-  id: number;
-  name: string;
-  icon: string;
-  frequency: string;
-  currentStreak: number;
-  completedToday: boolean;
-  totalDays: number;
-  completedDays: number;
-}
-
-const ACTIVE_HABITS: ActiveHabit[] = [
-  {
-    id: 1,
-    name: "Drink Water",
-    icon: "water",
-    frequency: "daily",
-    currentStreak: 12,
-    completedToday: true,
-    totalDays: 21,
-    completedDays: 12,
-  },
-  {
-    id: 2,
-    name: "Evening Walk",
-    icon: "walk",
-    frequency: "daily",
-    currentStreak: 7,
-    completedToday: false,
-    totalDays: 21,
-    completedDays: 7,
-  },
-  {
-    id: 3,
-    name: "Learn Spanish",
-    icon: "language",
-    frequency: "monthly",
-    currentStreak: 15,
-    completedToday: true,
-    totalDays: 21,
-    completedDays: 15,
-  },
-  {
-    id: 4,
-    name: "Gym Workout",
-    icon: "barbell",
-    frequency: "weekly",
-    currentStreak: 3,
-    completedToday: false,
-    totalDays: 21,
-    completedDays: 9,
-  },
-  {
-    id: 5,
-    name: "Write Journal",
-    icon: "pencil",
-    frequency: "daily",
-    currentStreak: 5,
-    completedToday: true,
-    totalDays: 21,
-    completedDays: 5,
-  },
-];
 
 const MainPageScreen = ({ navigation }: Props) => {
   const handleAdd = () => navigation.navigate("AddHabit");
@@ -97,7 +36,17 @@ const MainPageScreen = ({ navigation }: Props) => {
     console.log(`Completing habit ${habitId}`);
   };
 
-  const renderHabitItem = (habit: ActiveHabit) => (
+  const { fetchHabits } = useHabits();
+
+  useFocusEffect(
+    React.useCallback(() => {
+      fetchHabits();
+    }, [])
+  );
+
+  const { habits, loading, error } = useHabits();
+
+  const renderHabitItem = (habit: IHabit) => (
     <View key={habit.id} style={styles.habitCard}>
       <View style={styles.habitHeader}>
         <View style={styles.iconContainer}>
@@ -106,21 +55,21 @@ const MainPageScreen = ({ navigation }: Props) => {
         <View style={styles.habitInfo}>
           <Text style={styles.habitName}>{habit.name}</Text>
           <Text style={styles.habitFrequency}>
-            {habit.frequency.charAt(0).toUpperCase() + habit.frequency.slice(1)} • 
-            Streak: {habit.currentStreak} days
+            {habit.frequency.charAt(0).toUpperCase() + habit.frequency.slice(1)} •
+            Streak: {habit.statistics?.current_streak} days
           </Text>
         </View>
         <TouchableOpacity
           style={[
             styles.checkButton,
-            habit.completedToday && styles.checkButtonCompleted,
+            habit.statistics?.last_completed === new Date().toISOString().split('T')[0] && styles.checkButtonCompleted,
           ]}
           onPress={() => handleCompleteHabit(habit.id)}
         >
           <Icon
-            name={habit.completedToday ? "checkmark" : "ellipse-outline"}
+            name={habit.statistics?.last_completed === new Date().toISOString().split('T')[0] ? "checkmark" : "ellipse-outline"}
             size={24}
-            color={habit.completedToday ? "#FFF" : "#000"}
+            color={habit.statistics?.last_completed === new Date().toISOString().split('T')[0] ? "#FFF" : "#000"}
           />
         </TouchableOpacity>
       </View>
@@ -130,12 +79,12 @@ const MainPageScreen = ({ navigation }: Props) => {
           <View
             style={[
               styles.progressBarFill,
-              { width: `${(habit.completedDays / habit.totalDays) * 100}%` },
+              { width: `${(habit.statistics?.total_completions / 21) * 100}%` },
             ]}
           />
         </View>
         <Text style={styles.progressText}>
-          {habit.completedDays} / {habit.totalDays} days
+          {habit.statistics?.total_completions} / ${21} days
         </Text>
       </View>
     </View>
@@ -146,7 +95,7 @@ const MainPageScreen = ({ navigation }: Props) => {
       <Text style={styles.title}>Active Habits</Text>
 
       <ScrollView style={styles.scrollView}>
-        {ACTIVE_HABITS.map(renderHabitItem)}
+        {habits.map(renderHabitItem)}
       </ScrollView>
 
       <SafeAreaView edges={['bottom']} style={styles.navbarContainer}>

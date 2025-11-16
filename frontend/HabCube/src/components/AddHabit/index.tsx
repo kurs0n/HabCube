@@ -18,6 +18,8 @@ import Icon from "react-native-vector-icons/Ionicons";
 import DateTimePicker from "@react-native-community/datetimepicker";
 
 import { AVAILABLE_ICONS } from "../../assets/data/icons";
+import { ICreateHabitDTO, FrequencyType } from "../../types/habit.types";
+import { useCreateHabit } from "../../hooks/useCreateHabit";
 
 type Props = {
   navigation: NativeStackNavigationProp<RootStackParamList, "AddHabit">;
@@ -32,18 +34,29 @@ const AddHabitScreen = ({ navigation }: Props) => {
 
   const [habitName, setHabitName] = React.useState("");
   const [habitDescription, setHabitDescription] = React.useState("");
-  const [habitFrequency, setHabitFrequency] = React.useState("daily");
+  const [habitFrequency, setHabitFrequency] = React.useState<FrequencyType>("daily");
   const [habitStartDate, setHabitStartDate] = React.useState(new Date());
   const [showDatePicker, setShowDatePicker] = React.useState(false);
   const [habitIcon, setHabitIcon] = React.useState(AVAILABLE_ICONS[0].name);
 
-  const handleSubmit = () => {
-    console.log({
-      name: habitName,
-      description: habitDescription,
-      frequency: habitFrequency,
-      startDate: habitStartDate.toISOString(),
-    });
+  const { addHabit, loading, error } = useCreateHabit();
+
+  const handleSubmit = async () => {
+    try {
+      const habitData: ICreateHabitDTO = {
+        name: habitName,
+        description: habitDescription,
+        icon: habitIcon,
+        frequency: habitFrequency,
+        created_at: habitStartDate.toISOString(),
+      }
+      const response = await addHabit(habitData);
+      if (response) {
+        navigation.navigate("MainPage");
+      }
+    } catch (err) {
+      console.log("Error creating habit:", err);
+    }
   };
 
   const onDateChange = (event: any, selectedDate?: Date) => {
@@ -96,7 +109,7 @@ const AddHabitScreen = ({ navigation }: Props) => {
         <Text style={styles.title}>Frequency:</Text>
         <Picker
           selectedValue={habitFrequency}
-          onValueChange={(itemValue) => setHabitFrequency(itemValue)}
+          onValueChange={(itemValue) => setHabitFrequency(itemValue as FrequencyType)}
           style={styles.pickerContainer}
         >
           <Picker.Item label="Daily" value="daily" />
