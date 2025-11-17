@@ -40,12 +40,11 @@ def create_app(config_name=None):
     app.register_blueprint(api_bp, url_prefix="/api/v1")
     
     # Debug: Log registered routes
-    import logging
-    logger = logging.getLogger(__name__)
-    logger.info("=== Registered Flask Routes ===")
+    import sys
+    print("=== Registered Flask Routes ===", file=sys.stderr, flush=True)
     for rule in app.url_map.iter_rules():
-        logger.info(f"{rule.endpoint}: {rule.rule} [{', '.join(rule.methods)}]")
-    logger.info("================================")
+        print(f"{rule.endpoint}: {rule.rule} [{', '.join(rule.methods)}]", file=sys.stderr, flush=True)
+    print("================================", file=sys.stderr, flush=True)
 
     # Register CLI commands
     from app import cli
