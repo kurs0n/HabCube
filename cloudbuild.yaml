@@ -13,19 +13,17 @@ steps:
     args:
       - "-c"
       - |
-        gcloud run deploy backend \
+        gcloud run services update backend \
           --image "${_IMAGE_TAG}" \
-          --platform managed \
           --region "${_REGION}" \
           --service-account "${_SERVICE_ACCOUNT}" \
-          --add-cloudsql-instances "${_CLOUD_SQL_CONNECTION_NAME}" \
           --memory=512Mi \
           --cpu=1 \
           --timeout=300 \
+          --no-allow-unauthenticated \
+          --add-cloudsql-instances "${_CLOUD_SQL_CONNECTION_NAME}" \
           --set-env-vars "FLASK_ENV=production,DB_HOST=/cloudsql/${_CLOUD_SQL_CONNECTION_NAME},DB_PORT=5432,DB_USER=${_DB_USER},DB_NAME=${_DB_NAME}" \
-          --update-secrets "DB_PASSWORD=db-password:latest,SECRET_KEY=flask-key:latest,JWT_SECRET_KEY=jwt-key:latest"
-
-  # 4. (Re)create and run migration job
+          --update-secrets "DB_PASSWORD=db-password:latest,SECRET_KEY=flask-key:latest,JWT_SECRET_KEY=jwt-key:latest"  # 4. (Re)create and run migration job
   - name: "gcr.io/google.com/cloudsdktool/cloud-sdk"
     entrypoint: "bash"
     args:

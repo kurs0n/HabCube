@@ -4,8 +4,12 @@ Main entry point for HabCube Backend
 import sys
 print("WSGI: Starting import", file=sys.stderr, flush=True)
 
+print("WSGI: Importing app package", file=sys.stderr, flush=True)
+import app
+print("WSGI: app package imported", file=sys.stderr, flush=True)
+
 from app import create_app, db
-print("WSGI: Imported modules", file=sys.stderr, flush=True)
+print("WSGI: Imported create_app and db", file=sys.stderr, flush=True)
 
 print("WSGI: Creating app", file=sys.stderr, flush=True)
 app = create_app()
