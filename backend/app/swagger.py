@@ -16,15 +16,22 @@ def _noop_decorator(*_: Any, **__: Any) -> Callable[[Callable[..., Any]], Callab
 def swag_from(*args: Any, **kwargs: Any) -> Callable[[Callable[..., Any]], Callable[..., Any]]:
     """Conditionally apply swag_from decorator based on config."""
     # Import config here to avoid circular imports
-    from app.config import Config
+    import os
     
-    if not Config.ENABLE_SWAGGER_DOCS:
+    # Check if running on Cloud Run
+    running_on_cloud_run = bool(os.getenv("K_SERVICE"))
+    enable_swagger = os.getenv("ENABLE_SWAGGER_DOCS", "").lower() in {"1", "true", "yes", "on"}
+    
+    # Disable by default on Cloud Run
+    if running_on_cloud_run and not enable_swagger:
         return _noop_decorator(*args, **kwargs)
-
-    from flasgger import swag_from as flasgger_swag_from
-    return flasgger_swag_from(*args, **kwargs)
-
-
+    
+    # Enable by default locally
+    if not running_on_cloud_run or enable_swagger:
+        from flasgger import swag_from as flasgger_swag_from
+        return flasgger_swag_from(*args, **kwargs)
+    
+    return _noop_decorator(*args, **kwargs)
 def init_swagger(app: Flask) -> None:
     """Initialize Swagger/Flasgger if enabled in config."""
     if not app.config.get("ENABLE_SWAGGER_DOCS", False):
