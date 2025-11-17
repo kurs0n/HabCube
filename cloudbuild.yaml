@@ -17,8 +17,8 @@ steps:
           --image "${_IMAGE_TAG}" \
           --region "${_REGION}" \
           --service-account "${_SERVICE_ACCOUNT}" \
-          --memory=512Mi \
-          --cpu=1 \
+          --memory=4Gi \
+          --cpu=2 \
           --timeout=300 \
           --add-cloudsql-instances "${_CLOUD_SQL_CONNECTION_NAME}" \
           --set-env-vars "FLASK_ENV=production,DB_HOST=/cloudsql/${_CLOUD_SQL_CONNECTION_NAME},DB_PORT=5432,DB_USER=${_DB_USER},DB_NAME=${_DB_NAME}" \
@@ -61,7 +61,6 @@ steps:
         gcloud run jobs execute backend-seed --region "${_REGION}" --wait
 
 substitutions:
-  _PROJECT_ID: "project-5291a779-124c-4d04-8a5"
   _REGION: "europe-west1"
   _IMAGE_TAG: "europe-west1-docker.pkg.dev/project-5291a779-124c-4d04-8a5/cloud-run-source-deploy/habcube-backend:latest"
   _SERVICE_ACCOUNT: "1089871134307-compute@developer.gserviceaccount.com"
