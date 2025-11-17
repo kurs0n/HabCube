@@ -48,4 +48,5 @@ HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
     CMD curl -f http://localhost:${PORT:-8080}/health || exit 1
 
 # Use PORT environment variable for Cloud Run compatibility
-CMD gunicorn --bind 0.0.0.0:${PORT:-8080} --workers 4 --timeout 120 --access-logfile - --error-logfile - wsgi:app
+# On Cloud Run use fewer workers due to memory constraints
+CMD gunicorn --bind 0.0.0.0:${PORT:-8080} --workers ${GUNICORN_WORKERS:-2} --timeout ${GUNICORN_TIMEOUT:-300} --graceful-timeout 30 --access-logfile - --error-logfile - wsgi:app
