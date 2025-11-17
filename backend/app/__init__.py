@@ -26,7 +26,6 @@ def create_app(config_name=None):
     CORS(app)
 
     # Conditionally initialize Swagger (disabled on Cloud Run by default)
-    import os
     enable_swagger = os.getenv("ENABLE_SWAGGER_DOCS", "").lower() in {"1", "true", "yes", "on"}
     running_on_cloud_run = bool(os.getenv("K_SERVICE"))
     
