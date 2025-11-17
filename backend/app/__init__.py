@@ -3,8 +3,6 @@ import sys
 
 print("app/__init__.py: Start", file=sys.stderr, flush=True)
 
-print("app/__init__.py: Importing flasgger", file=sys.stderr, flush=True)
-from flasgger import Swagger
 print("app/__init__.py: Importing flask", file=sys.stderr, flush=True)
 from flask import Flask
 print("app/__init__.py: Importing flask_cors", file=sys.stderr, flush=True)
@@ -36,32 +34,10 @@ def create_app(config_name=None):
     jwt.init_app(app)
     CORS(app)
 
-    # Swagger configuration
-    swagger_config = {
-        "headers": [],
-        "specs": [
-            {
-                "endpoint": "apispec",
-                "route": "/apispec.json",
-                "rule_filter": lambda rule: True,
-                "model_filter": lambda tag: True,
-            }
-        ],
-        "static_url_path": "/flasgger_static",
-        "swagger_ui": True,
-        "specs_route": "/api/docs/",
-    }
+    # Conditionally initialize Swagger
+    from app.swagger import init_swagger
 
-    swagger_template = {
-        "info": {
-            "title": "HabCube API",
-            "description": "API for managing habits and tracking progress",
-            "version": "1.0.0",
-        },
-        "basePath": "/api/v1",
-    }
-
-    Swagger(app, config=swagger_config, template=swagger_template)
+    init_swagger(app)
 
     # Blueprinty
     from app.routes import api_bp, health_bp
