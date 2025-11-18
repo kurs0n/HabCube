@@ -13,6 +13,7 @@ import BottomNavbar from "../BottomNavbar/BottomNavbar";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { RootStackParamList } from "../../../App";
 import Icon from "react-native-vector-icons/Ionicons";
+import AppLogo from "../AppLogo";
 
 type MainPageNavigationProp = NativeStackNavigationProp<
   RootStackParamList,
@@ -143,6 +144,8 @@ const MainPageScreen = ({ navigation }: Props) => {
 
   return (
     <View style={styles.container}>
+
+      <AppLogo />
       <Text style={styles.title}>Active Habits</Text>
 
       <ScrollView style={styles.scrollView}>
@@ -167,7 +170,7 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: "#F7F7F7",
     width: "100%",
-    paddingTop: 50,
+    paddingTop: 10,
   },
   title: {
     fontSize: 28,
