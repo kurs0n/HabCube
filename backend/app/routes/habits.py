@@ -1,13 +1,13 @@
 import os
 from datetime import date, datetime
 
-from flasgger import swag_from
 from flask import Blueprint, jsonify, request
 
 from app import db
 from app.models.dto import CreateHabitDTO
-from app.models.enums import FrequencyType
+from app.models.enums import FrequencyType, HabitIcon
 from app.models.habit import Habit, HabitStatistics, HabitTask
+from app.swagger import swag_from
 
 habits_bp = Blueprint("habits", __name__)
 
@@ -78,12 +78,21 @@ def create_habit():
                 400,
             )
 
+        # Validate icon
+        icon = data.get("icon", HabitIcon.STAR.value)
+        if icon and not HabitIcon.is_valid(icon):
+            return (
+                jsonify({"error": "Invalid icon"}),
+                400,
+            )
+
         # Create DTO and validate
         dto = CreateHabitDTO(
             name=data.get("name"),
             description=data.get("description"),
             deadline_time=deadline_time,
             frequency=frequency,
+            icon=icon,
         )
 
         is_valid, error_message = dto.validate()
@@ -96,6 +105,7 @@ def create_habit():
             description=dto.description,
             deadline_time=dto.deadline_time,
             frequency=dto.frequency,
+            icon=dto.icon,
             active=True,
         )
 

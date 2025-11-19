@@ -235,7 +235,7 @@ Main table containing defined habits.
 
 
 ### Table: `habit_tasks`
-Each record represents one scheduled occurrence of a habit (e.g., daily task).  
+Each record represents one scheduled occurrence of a habit (e.g., daily task).
 Used for history and streak tracking.
 
 | Column | Type | Description |
@@ -292,11 +292,11 @@ graph TD
 
     G --> H(Backend: Zwróć 201 Created);
     H --> I(Aplikacja Mobilna: Potwierdzenie sukcesu);
-    
+
     I --> J{Asynchronicznie: Backend wysyła konfigurację do Kostki};
     J --> K(Intelligent Cube: Aktualizacja Ekranów/Lokalnej Konfiguracji);
     K --> L[END: Nowy nawyk gotowy];
-    
+
     Z400 --> ZK[END: Proces zakończony błędem];
     Z500 --> ZK;
 ```
@@ -326,7 +326,7 @@ graph TD
 
     K --> L(DB: Commit - Zapisz Task i Statystyki);
     L -- Błąd Commit/DB --> Z500[DB: Rollback i Zwróć 500];
-    
+
     L --> M(Backend: Zwróć 200 OK);
     M --> N(Intelligent Cube: Uruchom Motywacyjny Feedback LEDs, Sound);
     N --> O[END: Potwierdzenie wykonania];
@@ -357,7 +357,7 @@ graph TD
         C3 --> C4(Backend: Zwróć Habit DTO ze Statystykami);
         C4 --> C5(Aplikacja Mobilna: Wyświetlenie Statystyk i Historii);
     end
-    
+
     C5 --> K[END: Dane wyświetlone];
     B4 --> K;
     Z500_G --> K_E[END: Błąd];
@@ -409,9 +409,9 @@ Aplikacja jest gotowa do wdrożenia na Google Cloud Platform z następującymi s
 
 3. Można Curlować
 
+``` curl -H "Authorization: Bearer $TOKEN" https://habcube-run-1089871134307.europe-west1.run.app/api/v1/habits
+
 ```
-  curl -H "Authorization: Bearer $TOKEN" https://<BACKEND_PUBLIC_ADDRESS>/api/v1/habits
-  ```
 
 Powinno banglać
 

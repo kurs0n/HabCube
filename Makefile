@@ -13,6 +13,9 @@ up: ## Uruchom wszystkie serwisy
 	docker-compose up -d
 	@echo "Waiting for backend to be ready..."
 	@sleep 3
+	@echo "Running migrations..."
+	@docker-compose exec backend flask db upgrade || echo "Migrations failed or already applied"
+	@echo "Seeding database..."
 	@docker-compose exec backend flask seed || echo "Database already seeded or backend not ready yet"
 
 down: ## Zatrzymaj wszystkie serwisy
