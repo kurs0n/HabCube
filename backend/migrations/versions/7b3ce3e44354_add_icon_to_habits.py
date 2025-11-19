@@ -17,7 +17,7 @@ depends_on = None
 
 
 def upgrade():
-    # Add the icon column as VARCHAR (not using native enum)
+    # Add the icon column as VARCHAR (not using native enum to match FrequencyType pattern)
     op.add_column(
         'habits',
         sa.Column('icon', sa.String(length=50), nullable=True, server_default='star')

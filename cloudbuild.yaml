@@ -13,7 +13,7 @@ steps:
     args:
       - "-c"
       - |
-        gcloud run services update backend \
+        gcloud run deploy backend \
           --image "${_IMAGE_TAG}" \
           --region "${_REGION}" \
           --service-account "${_SERVICE_ACCOUNT}" \
@@ -22,7 +22,8 @@ steps:
           --timeout=300 \
           --add-cloudsql-instances "${_CLOUD_SQL_CONNECTION_NAME}" \
           --set-env-vars "FLASK_ENV=production,DB_HOST=/cloudsql/${_CLOUD_SQL_CONNECTION_NAME},DB_PORT=5432,DB_USER=${_DB_USER},DB_NAME=${_DB_NAME}" \
-          --update-secrets "DB_PASSWORD=db-password:latest,SECRET_KEY=flask-key:latest,JWT_SECRET_KEY=jwt-key:latest"
+          --update-secrets "DB_PASSWORD=db-password:latest,SECRET_KEY=flask-key:latest,JWT_SECRET_KEY=jwt-key:latest" \
+          --no-traffic
   - name: "gcr.io/google.com/cloudsdktool/cloud-sdk"
     entrypoint: "bash"
     args:
@@ -59,6 +60,16 @@ steps:
           --command "flask" --args "seed" \
           --task-timeout 10m
         gcloud run jobs execute backend-seed --region "${_REGION}" --wait
+
+  # 6. Switch traffic to new revision
+  - name: "gcr.io/google.com/cloudsdktool/cloud-sdk"
+    entrypoint: "bash"
+    args:
+      - "-c"
+      - |
+        gcloud run services update-traffic backend \
+          --region "${_REGION}" \
+          --to-latest
 
 substitutions:
   _REGION: "europe-west1"
