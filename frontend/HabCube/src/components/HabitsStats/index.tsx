@@ -3,6 +3,7 @@ import BottomNavbar from "../BottomNavbar/BottomNavbar";
 import { RootStackParamList } from "../../../App";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { SafeAreaView } from "react-native-safe-area-context";
+import AppLogo from "../AppLogo";
 
 type Props = {
   navigation: NativeStackNavigationProp<RootStackParamList, "HabitsStats">;
@@ -16,6 +17,8 @@ const HabitsStatsScreen = ({ navigation }: Props) => {
 
   return (
     <View style={styles.container}>
+
+      <AppLogo />
       <Text style={styles.title}>Statistics</Text>
 
       <ScrollView style={styles.scrollView}>
@@ -57,7 +60,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "#F7F7F7",
-    paddingTop: 50,
+    paddingTop: 10,
   },
   title: {
     fontSize: 28,

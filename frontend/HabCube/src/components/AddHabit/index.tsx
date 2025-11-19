@@ -18,6 +18,7 @@ import Icon from "react-native-vector-icons/Ionicons";
 import DateTimePicker from "@react-native-community/datetimepicker";
 
 import { AVAILABLE_ICONS } from "../../assets/data/icons";
+import AppLogo from "../AppLogo";
 import { ICreateHabitDTO, FrequencyType } from "../../types/habit.types";
 import { useCreateHabit } from "../../hooks/useCreateHabit";
 
@@ -68,6 +69,7 @@ const AddHabitScreen = ({ navigation }: Props) => {
   return (
     <View style={styles.container}>
       <ScrollView>
+        <AppLogo />
         <Text style={styles.title}>Create New Habit</Text>
 
         <Text style={styles.title}>Habit Name:</Text>
@@ -157,7 +159,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "#F7F7F7",
-    paddingTop: 50,
+    paddingTop: 10,
   },
   title: {
     fontSize: 28,
