@@ -409,7 +409,7 @@ Aplikacja jest gotowa do wdrożenia na Google Cloud Platform z następującymi s
 
 3. Można Curlować
 
-``` curl -H "Authorization: Bearer $TOKEN" https://habcube-run-1089871134307.europe-west1.run.app/api/v1/habits
+``` curl https://backend-1089871134307.europe-west1.run.app/api/v1/habits
 
 ```
 
