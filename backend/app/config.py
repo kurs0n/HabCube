@@ -33,20 +33,6 @@ class Config:
     JWT_ACCESS_TOKEN_EXPIRES = timedelta(hours=1)
     JWT_REFRESH_TOKEN_EXPIRES = timedelta(days=30)
 
-    # Redis Configuration
-    # Supports both local Docker Compose and Google Cloud Memorystore
-    REDIS_HOST = os.getenv("REDIS_HOST", "redis")  # IP address for Memorystore
-    REDIS_PORT = os.getenv("REDIS_PORT", "6379")
-    REDIS_PASSWORD = os.getenv("REDIS_PASSWORD", "")
-
-    _redis_url_from_env = os.getenv("REDIS_URL")
-    if _redis_url_from_env:
-        REDIS_URL = _redis_url_from_env
-    elif REDIS_PASSWORD:
-        REDIS_URL = f"redis://:{REDIS_PASSWORD}@{REDIS_HOST}:{REDIS_PORT}/0"
-    else:
-        REDIS_URL = f"redis://{REDIS_HOST}:{REDIS_PORT}/0"
-
     # CORS Configuration
     CORS_HEADERS = "Content-Type"
 

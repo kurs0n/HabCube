@@ -1,6 +1,5 @@
 import os
 
-from flasgger import Swagger
 from flask import Flask
 from flask_cors import CORS
 from flask_jwt_extended import JWTManager
@@ -26,42 +25,29 @@ def create_app(config_name=None):
     jwt.init_app(app)
     CORS(app)
 
-    # Swagger configuration
-    swagger_config = {
-        "headers": [],
-        "specs": [
-            {
-                "endpoint": "apispec",
-                "route": "/apispec.json",
-                "rule_filter": lambda rule: True,
-                "model_filter": lambda tag: True,
-            }
-        ],
-        "static_url_path": "/flasgger_static",
-        "swagger_ui": True,
-        "specs_route": "/api/docs/",
-    }
+    # Conditionally initialize Swagger (disabled on Cloud Run by default)
+    enable_swagger = os.getenv("ENABLE_SWAGGER_DOCS", "").lower() in {"1", "true", "yes", "on"}
+    running_on_cloud_run = bool(os.getenv("K_SERVICE"))
+    
+    if not running_on_cloud_run or enable_swagger:
+        from app.swagger import init_swagger
+        init_swagger(app)
 
-    swagger_template = {
-        "info": {
-            "title": "HabCube API",
-            "description": "API for managing habits and tracking progress",
-            "version": "1.0.0",
-        },
-        "basePath": "/api/v1",
-    }
-
-    Swagger(app, config=swagger_config, template=swagger_template)
-
-    # Blueprinty
-    from app.routes import api_bp, health_bp
+    # Register blueprints
+    from app.routes import health_bp, api_bp
 
     app.register_blueprint(health_bp)
     app.register_blueprint(api_bp, url_prefix="/api/v1")
+    
+    # Debug: Log registered routes
+    import sys
+    print("=== Registered Flask Routes ===", file=sys.stderr, flush=True)
+    for rule in app.url_map.iter_rules():
+        print(f"{rule.endpoint}: {rule.rule} [{', '.join(rule.methods)}]", file=sys.stderr, flush=True)
+    print("================================", file=sys.stderr, flush=True)
 
     # Register CLI commands
     from app import cli
-
     cli.init_app(app)
 
     return app

@@ -41,12 +41,19 @@ COPY --from=builder /usr/local/bin /usr/local/bin
 
 # Copy application code
 COPY . .
-
 EXPOSE 8080
-ENV PORT=8080
 
 HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
     CMD curl -f http://localhost:${PORT:-8080}/health || exit 1
 
 # Use PORT environment variable for Cloud Run compatibility
-CMD gunicorn --bind 0.0.0.0:${PORT:-8080} --workers 4 --timeout 120 --access-logfile - --error-logfile - wsgi:app
+# Single worker with threads to minimize memory usage (4GB limit)
+CMD gunicorn --bind 0.0.0.0:${PORT:-8080} \
+    --workers 1 \
+    --threads ${GUNICORN_THREADS:-4} \
+    --timeout ${GUNICORN_TIMEOUT:-300} \
+    --graceful-timeout 30 \
+    --access-logfile - \
+    --error-logfile - \
+    wsgi:app
+

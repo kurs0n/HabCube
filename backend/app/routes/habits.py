@@ -1,13 +1,13 @@
 import os
 from datetime import date, datetime
 
-from flasgger import swag_from
 from flask import Blueprint, jsonify, request
 
 from app import db
 from app.models.dto import CreateHabitDTO
 from app.models.enums import FrequencyType, HabitIcon
 from app.models.habit import Habit, HabitStatistics, HabitTask
+from app.swagger import swag_from
 
 habits_bp = Blueprint("habits", __name__)
 
