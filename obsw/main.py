@@ -6,8 +6,13 @@ import utime
 from mpu9250 import MPU9250
 from sh1106 import SH1106_SPI
 import framebuf
+import requests
+import json
+import _thread
 
 HOW_MANY_ANIMATION_PLAY = 5
+active_habit_index = 0 
+active_habits = []
 
 buzzer = PWM(Pin(22))
 buzzer.duty_u16(0)
@@ -32,8 +37,8 @@ def init():
     wlan = network.WLAN(network.STA_IF)
     wlan.active(True)
 
-    ssid = 'Tenda_8CE3B0'
-    password = 'everycake306'
+    ssid = b"Patryk\xe2\x80\x99s iPhone"
+    password = 'marcela2115'
 
     wlan.connect(ssid, password)
 
@@ -51,6 +56,20 @@ def init():
         print('Connection successful!')
         network_info = wlan.ifconfig()
         print('IP address:', network_info[0])
+
+    load_active_habits() 
+    
+    display_active_habit()
+
+    calibrate_gyro()
+
+def load_active_habits():
+    response = requests.get("https://backend-1089871134307.europe-west1.run.app/api/v1/habits")
+    content = response.content
+    habits = json.loads(content)
+    for habit in habits["habits"]:
+        if(habit["active"]):
+            active_habits.append(habit)
 
 def play_animation(display1,display2, frame_delay_ms=5):
 
@@ -95,16 +114,31 @@ def calibrate_gyro(samples=200):
     print(f"Calibrated gyroscope. Offset Z: {offset_z}")
     return offset_z  
 
+def play_sui_animation():
+    for _ in range(0,5):
+        play_animation(display_oled1,display_oled2)
+
+def display_active_habit():
+    habit_name = active_habits[active_habit_index]["name"]
+    display_oled1.fill(1)
+    display_oled2.fill(1)
+    display_oled1.text(habit_name,25,28,0)
+    display_oled2.text(habit_name,25,28,0)
+    display_oled1.show()    
+    display_oled2.show()
+
+def switch_next_habit():
+    return None
+
+def switch_previous_habit():
+    
+    return None
 
 def loop():
     gyro_offset_z = calibrate_gyro()
     angle_z = 0.0
     last_time = utime.ticks_ms()
 
-    for _ in range(0,5):
-        play_animation(display_oled1,display_oled2)
-
-    print(hex(sensor.whoami))
     while(True):
         current_time = utime.ticks_ms()
         delta_t = utime.ticks_diff(current_time, last_time) / 1000.0 
@@ -114,21 +148,19 @@ def loop():
         
         angle_z += gyro_z_velocity * delta_t
 
-        if abs(angle_z) >= 0.55:
-
+        if abs(angle_z) >= 0.55:        
+            
+            mario_theme_thread = _thread.start_new_thread(music.play_mario_main_theme,(buzzer)) # thread is not working at all
+            play_sui_animation()
         
+            # switch habit and complete current one
             
-            display_oled2.fill(1)
-            display_oled2.text("ROTATED", 25, 28, 0)
-            display_oled2.show()
-            
-            music.play_mario_main_theme(buzzer)
-            
+            # display_active_habit()
+
             angle_z = 0.0
             
             utime.sleep_ms(1000)
 
         utime.sleep_ms(20)        
-
 init()
 loop()
