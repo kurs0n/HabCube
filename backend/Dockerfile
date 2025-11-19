@@ -41,7 +41,6 @@ COPY --from=builder /usr/local/bin /usr/local/bin
 
 # Copy application code
 COPY . .
-
 EXPOSE 8080
 
 HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
@@ -57,3 +56,4 @@ CMD gunicorn --bind 0.0.0.0:${PORT:-8080} \
     --access-logfile - \
     --error-logfile - \
     wsgi:app
+

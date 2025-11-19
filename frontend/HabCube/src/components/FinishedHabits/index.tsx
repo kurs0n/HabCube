@@ -4,6 +4,7 @@ import { RootStackParamList } from "../../../App";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { SafeAreaView } from "react-native-safe-area-context";
 import Icon from "react-native-vector-icons/Ionicons";
+import AppLogo from "../AppLogo";
 
 type Props = {
   navigation: NativeStackNavigationProp<RootStackParamList, "FinishedHabits">;
@@ -91,10 +92,10 @@ const FinishedHabitsScreen = ({ navigation }: Props) => {
         <View style={styles.habitInfo}>
           <View style={styles.habitNameRow}>
             <Text style={styles.habitName}>{habit.name}</Text>
-            <Icon 
-              name={habit.isSuccess ? "checkmark-circle" : "close-circle"} 
-              size={30} 
-              color={habit.isSuccess ? "#4CAF50" : "#F44336"} 
+            <Icon
+              name={habit.isSuccess ? "checkmark-circle" : "close-circle"}
+              size={30}
+              color={habit.isSuccess ? "#4CAF50" : "#F44336"}
             />
           </View>
           <Text style={styles.finishedDate}>
@@ -121,6 +122,8 @@ const FinishedHabitsScreen = ({ navigation }: Props) => {
 
   return (
     <View style={styles.container}>
+
+      <AppLogo />
       <Text style={styles.title}>Finished Habits</Text>
 
       <ScrollView style={styles.scrollView}>
@@ -144,7 +147,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "#F7F7F7",
-    paddingTop: 50,
+    paddingTop: 10,
   },
   title: {
     fontSize: 28,

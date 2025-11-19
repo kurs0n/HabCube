@@ -6,7 +6,7 @@ import click
 from flask.cli import with_appcontext
 
 from app import db
-from app.models.enums import FrequencyType
+from app.models.enums import FrequencyType, HabitIcon
 from app.models.habit import Habit, HabitStatistics
 
 
@@ -33,6 +33,7 @@ def seed_db():
     click.echo("Seeding database with sample habits...")
     frequencies = [freq.name for freq in FrequencyType]  # Use enum names (uppercase)
     colors = ["red", "blue", "green", "yellow", "purple", "orange", "gray"]
+    icons = [icon.value for icon in HabitIcon]  # Get all available icons
 
     for i in range(1, 61):
         freq = random.choice(frequencies)
@@ -40,6 +41,7 @@ def seed_db():
             name=f"Habit {i}",
             description=f"Description for habit {i}",
             frequency=freq,
+            icon=random.choice(icons),
             active=bool(random.getrandbits(1)),
             deadline_time=datetime.time(
                 hour=random.randint(0, 23), minute=random.choice([0, 15, 30, 45])
