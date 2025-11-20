@@ -25,6 +25,61 @@ def get_habits():
         return jsonify({"error": f"Failed to fetch habits: {str(e)}"}), 500
 
 
+@habits_bp.route("/habits/active", methods=["GET"])
+def get_active_habits():
+    """Get active habits that are ready to be completed based on their frequency"""
+    try:
+        now = datetime.utcnow()
+        today = date.today()
+
+        # Get all active habits
+        active_habits = Habit.query.filter_by(active=True).all()
+
+        ready_habits = []
+        for habit in active_habits:
+            # Get last completion
+            last_task = HabitTask.query.filter_by(
+                habit_id=habit.id,
+                completed=True
+            ).order_by(HabitTask.completion_time.desc()).first()
+
+            is_ready = False
+
+            if not last_task:
+                # Never completed, always ready
+                is_ready = True
+            else:
+                last_completion = last_task.completion_time
+                time_diff = now - last_completion
+
+                # Check based on frequency
+                if habit.frequency == FrequencyType.EVERY_30_MIN.value:
+                    is_ready = time_diff.total_seconds() >= 30 * 60
+                elif habit.frequency == FrequencyType.HOURLY.value:
+                    is_ready = time_diff.total_seconds() >= 60 * 60
+                elif habit.frequency == FrequencyType.EVERY_3_HOURS.value:
+                    is_ready = time_diff.total_seconds() >= 3 * 60 * 60
+                elif habit.frequency == FrequencyType.EVERY_6_HOURS.value:
+                    is_ready = time_diff.total_seconds() >= 6 * 60 * 60
+                elif habit.frequency == FrequencyType.DAILY.value:
+                    # Ready if last completion was before today
+                    is_ready = last_task.date < today
+                elif habit.frequency == FrequencyType.WEEKLY.value:
+                    # Ready if last completion was 7+ days ago
+                    is_ready = (today - last_task.date).days >= 7
+                elif habit.frequency == FrequencyType.MONTHLY.value:
+                    # Ready if last completion was 30+ days ago
+                    is_ready = (today - last_task.date).days >= 30
+
+            if is_ready:
+                ready_habits.append(habit.to_dict())
+
+        return jsonify({"habits": ready_habits}), 200
+
+    except Exception as e:
+        return jsonify({"error": f"Failed to fetch active habits: {str(e)}"}), 500
+
+
 @habits_bp.route("/habits/<int:habit_id>", methods=["GET"])
 @swag_from(os.path.join(DOCS_DIR, "get_habit.yml"))
 def get_habit(habit_id):
