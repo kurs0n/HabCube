@@ -2,7 +2,7 @@ from datetime import datetime
 from typing import TYPE_CHECKING
 
 from app import db
-from app.models.enums import FrequencyType, HabitIcon
+from app.models.enums import FrequencyType, HabitIcon, HabitType
 
 if TYPE_CHECKING:
     from flask_sqlalchemy.model import Model
@@ -28,6 +28,11 @@ class Habit(Model):
         db.Enum(HabitIcon, native_enum=False),
         nullable=True,
         default=HabitIcon.STAR.value,
+    )
+    type = db.Column(
+        db.Enum(HabitType, native_enum=False),
+        nullable=True,
+        default=HabitType.WATER.value,
     )
     active = db.Column(db.Boolean, default=True, nullable=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
@@ -55,6 +60,7 @@ class Habit(Model):
             else None,
             "frequency": self.frequency,
             "icon": self.icon,
+            "type": self.type,
             "active": self.active,
             "created_at": self.created_at.isoformat() if self.created_at else None,
             "color": self.color,

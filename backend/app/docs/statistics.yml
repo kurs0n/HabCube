@@ -1,0 +1,50 @@
+tags:
+  - Statistics
+summary: Get global habit statistics
+description: >
+  Returns calculated statistics across all user habits, including counts, 
+  average completion rate, and longest achieved streak.
+operationId: getGlobalStatistics
+
+responses:
+  200:
+    description: Global statistics successfully retrieved
+    schema:
+      type: object
+      properties:
+        total_habits:
+          type: integer
+          example: 60
+          description: Total number of habits defined in the system.
+        active_habits_count:
+          type: integer
+          example: 35
+          description: Number of habits currently marked as active (active=True).
+        inactive_habits_count:
+          type: integer
+          example: 25
+          description: Number of habits marked as inactive/archived (active=False).
+        longest_streak:
+          type: integer
+          example: 120
+          description: The highest value of 'best_streak' found among all habits.
+        average_completion_rate:
+          type: number
+          format: float
+          example: 0.78
+          description: Average completion success rate across all habits (mean of HabitStatistics.success_rate).
+    examples:
+      success:
+        total_habits: 60
+        active_habits_count: 45
+        inactive_habits_count: 15
+        longest_streak: 155
+        average_completion_rate: 0.81
+  500:
+    description: Server error
+    schema:
+      type: object
+      properties:
+        error:
+          type: string
+          example: "Failed to fetch statistics: Cannot compute average due to missing data"

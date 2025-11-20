@@ -2,6 +2,7 @@ import os
 from datetime import date, datetime
 
 from flask import Blueprint, jsonify, request
+from sqlalchemy import func
 
 from app import db
 from app.models.dto import CreateHabitDTO
@@ -23,6 +24,132 @@ def get_habits():
 
     except Exception as e:
         return jsonify({"error": f"Failed to fetch habits: {str(e)}"}), 500
+
+
+@habits_bp.route("/habits/active", methods=["GET"])
+def get_active_habits():
+    """Get active habits that are ready to be completed based on their frequency"""
+    try:
+        now = datetime.utcnow()
+        today = date.today()
+
+        # Get all active habits
+        active_habits = Habit.query.filter_by(active=True).all()
+
+        ready_habits = []
+        for habit in active_habits:
+            # Get last completion
+            last_task = HabitTask.query.filter_by(
+                habit_id=habit.id,
+                completed=True
+            ).order_by(HabitTask.completion_time.desc()).first()
+
+            is_ready = False
+
+            if not last_task:
+                # Never completed, always ready
+                is_ready = True
+            else:
+                last_completion = last_task.completion_time
+                time_diff = now - last_completion
+
+                # Check based on frequency
+                if habit.frequency == FrequencyType.EVERY_30_MIN.value:
+                    is_ready = time_diff.total_seconds() >= 30 * 60
+                elif habit.frequency == FrequencyType.HOURLY.value:
+                    is_ready = time_diff.total_seconds() >= 60 * 60
+                elif habit.frequency == FrequencyType.EVERY_3_HOURS.value:
+                    is_ready = time_diff.total_seconds() >= 3 * 60 * 60
+                elif habit.frequency == FrequencyType.EVERY_6_HOURS.value:
+                    is_ready = time_diff.total_seconds() >= 6 * 60 * 60
+                elif habit.frequency == FrequencyType.DAILY.value:
+                    # Ready if last completion was before today
+                    is_ready = last_task.date < today
+                elif habit.frequency == FrequencyType.WEEKLY.value:
+                    # Ready if last completion was 7+ days ago
+                    is_ready = (today - last_task.date).days >= 7
+                elif habit.frequency == FrequencyType.MONTHLY.value:
+                    # Ready if last completion was 30+ days ago
+                    is_ready = (today - last_task.date).days >= 30
+
+            if is_ready:
+                ready_habits.append(habit.to_dict())
+
+        return jsonify({"habits": ready_habits}), 200
+
+    except Exception as e:
+        return jsonify({"error": f"Failed to fetch active habits: {str(e)}"}), 500
+@habits_bp.route("/finished-habits", methods=["GET"])
+@swag_from(os.path.join(DOCS_DIR, "finished_habits.yml"))
+def get_finished_habits():
+    try:
+        habits = Habit.query.filter_by(active=False).all()
+        finished_habits = []
+        for habit in habits:
+            finished_habit = {}
+            habit_dict = habit.to_dict()
+            finished_habit["id"] = habit_dict["id"]
+            finished_habit["name"] = habit_dict["name"]
+            finished_habit["description"] = habit_dict["description"]
+            finished_habit["icon"] = habit_dict["icon"]
+
+            if habit.statistics:
+                stats_data = habit.statistics.to_dict()
+                best_streak = stats_data.get("best_streak", 0)
+                finished_habit["best_streak"] = best_streak
+                if int(best_streak) >= 21:
+                    finished_habit["success_status"] = True
+                else:
+                    finished_habit["success_status"] = False
+                finished_habit["finish_date"] = stats_data["last_completed"]
+            else:
+                finished_habit["best_streak"] = 0
+                finished_habit["success_status"] = False
+                finished_habit["finish_date"] = ''
+
+            finished_habits.append(finished_habit)
+
+        return jsonify({"habits": finished_habits}), 200
+
+    except Exception as e:
+        print(f"Error: {e}")
+        return jsonify({"error": f"Failed to fetch habits: {str(e)}"}), 500
+
+@habits_bp.route("/statistics", methods=["GET"])
+def get_habits_statistics():
+    try:
+        total_habits = db.session.query(func.count(Habit.id)).scalar()
+
+        active_habits_count = db.session.query(Habit).filter_by(active=True).count()
+        inactive_habits_count = total_habits - active_habits_count
+
+        longest_streak = db.session.query(func.max(HabitStatistics.best_streak)).scalar()
+
+        if longest_streak is None:
+            longest_streak = 0
+
+        average_completion_rate = db.session.query(
+            func.avg(HabitStatistics.success_rate)
+        ).scalar()
+
+        if average_completion_rate is None:
+            average_completion_rate = 0.0
+        else:
+            average_completion_rate = round(average_completion_rate, 2)
+
+        response_data = {
+            "total_habits": total_habits,
+            "active_habits_count": active_habits_count,
+            "completed_habits_count": inactive_habits_count,
+            "longest_streak": longest_streak,
+            "average_completion_rate": average_completion_rate
+        }
+
+        return jsonify(response_data), 200
+
+    except Exception as e:
+        print(f"Error fetching global statistics: {e}")
+        return jsonify({"error": f"Failed to fetch statistics: {str(e)}"}), 500
 
 
 @habits_bp.route("/habits/<int:habit_id>", methods=["GET"])
@@ -86,6 +213,19 @@ def create_habit():
                 400,
             )
 
+        # Validate type
+        from app.models.enums import HabitType
+        habit_type = data.get("type", HabitType.WATER.value)
+        if habit_type and not HabitType.is_valid(habit_type):
+            return (
+                jsonify(
+                    {
+                        "error": f"Invalid type. Must be one of: {', '.join(HabitType.choices())}"
+                    }
+                ),
+                400,
+            )
+
         # Create DTO and validate
         dto = CreateHabitDTO(
             name=data.get("name"),
@@ -106,6 +246,7 @@ def create_habit():
             deadline_time=dto.deadline_time,
             frequency=dto.frequency,
             icon=dto.icon,
+            type=habit_type,
             active=True,
         )
 
