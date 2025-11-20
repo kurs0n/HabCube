@@ -84,3 +84,34 @@ Zadania do zrobienia (TODO)
     Piotr:
         -Stworzenie ścianki z przytwierdzeniem na śrubki
         -Zamówienie na kostke 3D
+
+(6.11.2025 - 20.11.2025)
+Zadania ukończone:
+Szymon:
+    - projekt logo oraz dodanie go do aplikacji
+    - tworzenie nawyku i podłączenie z backendem
+    - wypisywanie nawyku do main page
+    - wyświetlanie statystyk aplikacji i ukończonych nawyków
+
+Aleks: 
+    - nowy deployment na gcloud
+    - dodanie ikonek z habits
+    - support w połączeniu backendu z frontendem
+    - dodanie pola type do nawyku 
+
+Paweł: 
+    - endpointy dla frontendu finished_habits i statistics 
+
+Piotr:
+    - Projekt kostki skończony i zamówiony
+Zadania do zrobienia (TODO):
+
+Aleks i Paweł:
+    - Ewentualne poprawki backendowe
+    - Testy jednostkowe
+Szymon: 
+    - Poprawki stylistyczne
+    - Frontend wrzucony do kontenera docker 
+    - Dodanie do formularza pola z typem ikonki
+Piotr i Patryk: 
+    - Odebranie wydrukowanej kostki i połączenie z komponentami

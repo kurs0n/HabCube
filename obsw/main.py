@@ -43,8 +43,8 @@ def init():
     wlan = network.WLAN(network.STA_IF)
     wlan.active(True)
 
-    ssid = b"Patryk\xe2\x80\x99s iPhone"
-    password = 'marcela2115'
+    ssid = b"Tenda_8CE3B0"
+    password = 'everycake306'
 
     wlan.connect(ssid, password)
 
@@ -156,6 +156,7 @@ def complete_and_switch_habit():
     print(response.content) 
     if (response.status_code == 200):
         active_habits.pop(active_habit_index)
+        switch_next_habit()
 
 def switch_next_habit():
     global active_habit_index
