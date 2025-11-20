@@ -9,6 +9,12 @@ import framebuf
 import requests
 import json
 import _thread
+import icons
+
+gyro_offset_z = 0
+angle_z = 0
+last_time = 0 
+icons.configure_icons()
 
 HOW_MANY_ANIMATION_PLAY = 5
 active_habit_index = 0 
@@ -61,18 +67,14 @@ def init():
     
     display_active_habit()
 
-    calibrate_gyro()
-
 def load_active_habits():
-    response = requests.get("https://backend-1089871134307.europe-west1.run.app/api/v1/habits")
+    global active_habits
+    response = requests.get("https://backend-1089871134307.europe-west1.run.app/api/v1/habits/active")
     content = response.content
     habits = json.loads(content)
-    for habit in habits["habits"]:
-        if(habit["active"]):
-            active_habits.append(habit)
+    active_habits = habits["habits"]
 
 def play_animation(display1,display2, frame_delay_ms=5):
-
     frame_number = 1
     while True:
             filename = f"resized_{frame_number}.bmp"
@@ -91,8 +93,6 @@ def play_animation(display1,display2, frame_delay_ms=5):
                         display2.fill(0)
                         display2.blit(fb, 0, 0)
                         display2.show()
-                        
-                        print(f"Displayed frame: {filename}")
                         
                         utime.sleep_ms(frame_delay_ms)
                         frame_number += 1
@@ -120,26 +120,73 @@ def play_sui_animation():
 
 def display_active_habit():
     habit_name = active_habits[active_habit_index]["name"]
-    display_oled1.fill(1)
-    display_oled2.fill(1)
-    display_oled1.text(habit_name,25,28,0)
-    display_oled2.text(habit_name,25,28,0)
+    display_oled1.fill(0)
+    display_oled2.fill(0)
+    x_icon = (128 - 80) // 2
+
+    if(active_habits[active_habit_index]["type"]== "water"):
+        display_oled1.blit(icons.fb_glass,x_icon,0)
+        display_oled2.blit(icons.fb_glass,x_icon,0)
+    elif (active_habits[active_habit_index]["type"] =="sport"):
+        display_oled1.blit(icons.fb_sport,x_icon,0)
+        display_oled2.blit(icons.fb_sport,x_icon,0)
+    elif (active_habits[active_habit_index]["type"]=="language"):
+        display_oled1.blit(icons.fb_lang,x_icon,0)
+        display_oled2.blit(icons.fb_lang,x_icon,0)
+    elif(active_habits[active_habit_index]["type"] == "read"): 
+        display_oled1.blit(icons.fb_glasses,x_icon,0)
+        display_oled2.blit(icons.fb_glasses,x_icon,0)
+    elif (active_habits[active_habit_index]["type"] == "code"):
+        display_oled1.blit(icons.fb_code,x_icon,0)
+        display_oled2.blit(icons.fb_code,x_icon,0)
+    
+
+    text_length = len(habit_name) * 8
+    x_text = (128 - text_length) // 2
+    y_text = 52
+    if(x_text < 0):
+        x_text = 0
+    display_oled1.text(habit_name,x_text,y_text,1)
+    display_oled2.text(habit_name,x_text,y_text,1)
     display_oled1.show()    
     display_oled2.show()
 
+def complete_and_switch_habit():
+    response = requests.post(f"https://backend-1089871134307.europe-west1.run.app/api/v1/habits/{str(active_habits[active_habit_index]["id"])}/complete",json={})
+    print(response.content) 
+    if (response.status_code == 200):
+        active_habits.pop(active_habit_index)
+
 def switch_next_habit():
-    return None
+    global active_habit_index
+    active_habit_index += 1
+    if(active_habit_index >= len(active_habits)):
+        active_habit_index = 0
 
 def switch_previous_habit():
-    
-    return None
+    global active_habit_index
+    active_habit_index -= 1
+    if(active_habit_index < 0):
+        active_habit_index = len(active_habits) - 1 
 
 def loop():
+    global gyro_offset_z, angle_z, last_time
     gyro_offset_z = calibrate_gyro()
     angle_z = 0.0
     last_time = utime.ticks_ms()
 
     while(True):
+        if(button1.value() == 0 and button2.value() == 0):
+            print("reset")
+        elif (button1.value() == 0):
+            switch_previous_habit()
+            display_active_habit()
+            utime.sleep_ms(100)
+        elif (button2.value() == 0):
+            switch_next_habit()
+            display_active_habit()
+            utime.sleep_ms(100)
+
         current_time = utime.ticks_ms()
         delta_t = utime.ticks_diff(current_time, last_time) / 1000.0 
         last_time = current_time
@@ -149,16 +196,17 @@ def loop():
         angle_z += gyro_z_velocity * delta_t
 
         if abs(angle_z) >= 0.55:        
-            
-            mario_theme_thread = _thread.start_new_thread(music.play_mario_main_theme,(buzzer)) # thread is not working at all
+            _thread.start_new_thread(music.play_mario_main_theme,(buzzer,))
             play_sui_animation()
-        
-            # switch habit and complete current one
-            
-            # display_active_habit()
 
-            angle_z = 0.0
+            complete_and_switch_habit() 
             
+            display_active_habit()
+
+            gyro_offset_z = calibrate_gyro()
+            angle_z = 0.0
+            last_time = utime.ticks_ms()
+
             utime.sleep_ms(1000)
 
         utime.sleep_ms(20)        

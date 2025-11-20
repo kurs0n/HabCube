@@ -1,5 +1,7 @@
 import time
 
+PLAY_COUNT = 3
+
 NOTES = {
     'REST': 0, 'B0': 31, 'C1': 33, 'CS1': 35, 'D1': 37, 'DS1': 39, 'E1': 41, 'F1': 44, 'FS1': 46, 'G1': 49, 'GS1': 52, 'A1': 55, 'AS1': 58, 'B1': 62,
     'C2': 65, 'CS2': 69, 'D2': 73, 'DS2': 78, 'E2': 82, 'F2': 87, 'FS2': 93, 'G2': 98, 'GS2': 104, 'A2': 110, 'AS2': 117, 'B2': 123,
@@ -39,14 +41,15 @@ def play_mario_main_theme(buzzer):
         9, 9, 9, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12
     ]
 
-    for i in range(len(melody_notes)):
-        note_name = melody_notes[i]
-        tempo = tempo_values[i]
-        
-        note_duration_s = (1000 / tempo) / 1000.0
-        frequency = NOTES[note_name]
-        
-        play_tone(frequency, note_duration_s, buzzer)
-        
-        pause_between_notes_s = note_duration_s * 0.30
-        time.sleep(pause_between_notes_s)
+    for _ in range(0,PLAY_COUNT):
+        for i in range(len(melody_notes)):
+            note_name = melody_notes[i]
+            tempo = tempo_values[i]
+            
+            note_duration_s = (1000 / tempo) / 1000.0
+            frequency = NOTES[note_name]
+            
+            play_tone(frequency, note_duration_s, buzzer)
+            
+            pause_between_notes_s = note_duration_s * 0.30
+            time.sleep(pause_between_notes_s)
