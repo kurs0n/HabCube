@@ -2,6 +2,7 @@ import os
 from datetime import date, datetime
 
 from flask import Blueprint, jsonify, request
+from sqlalchemy import func
 
 from app import db
 from app.models.dto import CreateHabitDTO
@@ -60,6 +61,43 @@ def get_finished_habits():
     except Exception as e:
         print(f"Error: {e}")
         return jsonify({"error": f"Failed to fetch habits: {str(e)}"}), 500
+
+@habits_bp.route("/statistics", methods=["GET"])
+def get_habits_statistics():
+    try:
+        total_habits = db.session.query(func.count(Habit.id)).scalar()
+
+        active_habits_count = db.session.query(Habit).filter_by(active=True).count()
+        inactive_habits_count = total_habits - active_habits_count
+
+        longest_streak = db.session.query(func.max(HabitStatistics.best_streak)).scalar()
+
+        if longest_streak is None:
+            longest_streak = 0
+
+        average_completion_rate = db.session.query(
+            func.avg(HabitStatistics.success_rate)
+        ).scalar()
+
+        if average_completion_rate is None:
+            average_completion_rate = 0.0
+        else:
+            average_completion_rate = round(average_completion_rate, 2)
+
+        response_data = {
+            "total_habits": total_habits,
+            "active_habits_count": active_habits_count,
+            "completed_habits_count": inactive_habits_count,
+            "longest_streak": longest_streak,
+            "average_completion_rate": average_completion_rate
+        }
+
+        return jsonify(response_data), 200
+
+    except Exception as e:
+        print(f"Error fetching global statistics: {e}")
+        return jsonify({"error": f"Failed to fetch statistics: {str(e)}"}), 500
+
 
 @habits_bp.route("/habits/<int:habit_id>", methods=["GET"])
 @swag_from(os.path.join(DOCS_DIR, "get_habit.yml"))
