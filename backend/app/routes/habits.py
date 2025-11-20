@@ -25,6 +25,42 @@ def get_habits():
         return jsonify({"error": f"Failed to fetch habits: {str(e)}"}), 500
 
 
+@habits_bp.route("/finished-habits", methods=["GET"])
+@swag_from(os.path.join(DOCS_DIR, "finished_habits.yml"))
+def get_finished_habits():
+    try:
+        habits = Habit.query.filter_by(active=False).all()
+        finished_habits = []
+        for habit in habits:
+            finished_habit = {}
+            habit_dict = habit.to_dict()
+            finished_habit["id"] = habit_dict["id"]
+            finished_habit["name"] = habit_dict["name"]
+            finished_habit["description"] = habit_dict["description"]
+            finished_habit["icon"] = habit_dict["icon"]
+
+            if habit.statistics:
+                stats_data = habit.statistics.to_dict()
+                best_streak = stats_data.get("best_streak", 0)
+                finished_habit["best_streak"] = best_streak
+                if int(best_streak) >= 21:
+                    finished_habit["success_status"] = True
+                else:
+                    finished_habit["success_status"] = False
+                finished_habit["finish_date"] = stats_data["last_completed"]
+            else:
+                finished_habit["best_streak"] = 0
+                finished_habit["success_status"] = False
+                finished_habit["finish_date"] = ''
+
+            finished_habits.append(finished_habit)
+
+        return jsonify({"habits": finished_habits}), 200
+
+    except Exception as e:
+        print(f"Error: {e}")
+        return jsonify({"error": f"Failed to fetch habits: {str(e)}"}), 500
+
 @habits_bp.route("/habits/<int:habit_id>", methods=["GET"])
 @swag_from(os.path.join(DOCS_DIR, "get_habit.yml"))
 def get_habit(habit_id):
