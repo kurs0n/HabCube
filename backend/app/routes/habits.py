@@ -2,6 +2,7 @@ import os
 from datetime import date, datetime
 
 from flask import Blueprint, jsonify, request
+from sqlalchemy import func
 
 from app import db
 from app.models.dto import CreateHabitDTO
@@ -78,6 +79,77 @@ def get_active_habits():
 
     except Exception as e:
         return jsonify({"error": f"Failed to fetch active habits: {str(e)}"}), 500
+@habits_bp.route("/finished-habits", methods=["GET"])
+@swag_from(os.path.join(DOCS_DIR, "finished_habits.yml"))
+def get_finished_habits():
+    try:
+        habits = Habit.query.filter_by(active=False).all()
+        finished_habits = []
+        for habit in habits:
+            finished_habit = {}
+            habit_dict = habit.to_dict()
+            finished_habit["id"] = habit_dict["id"]
+            finished_habit["name"] = habit_dict["name"]
+            finished_habit["description"] = habit_dict["description"]
+            finished_habit["icon"] = habit_dict["icon"]
+
+            if habit.statistics:
+                stats_data = habit.statistics.to_dict()
+                best_streak = stats_data.get("best_streak", 0)
+                finished_habit["best_streak"] = best_streak
+                if int(best_streak) >= 21:
+                    finished_habit["success_status"] = True
+                else:
+                    finished_habit["success_status"] = False
+                finished_habit["finish_date"] = stats_data["last_completed"]
+            else:
+                finished_habit["best_streak"] = 0
+                finished_habit["success_status"] = False
+                finished_habit["finish_date"] = ''
+
+            finished_habits.append(finished_habit)
+
+        return jsonify({"habits": finished_habits}), 200
+
+    except Exception as e:
+        print(f"Error: {e}")
+        return jsonify({"error": f"Failed to fetch habits: {str(e)}"}), 500
+
+@habits_bp.route("/statistics", methods=["GET"])
+def get_habits_statistics():
+    try:
+        total_habits = db.session.query(func.count(Habit.id)).scalar()
+
+        active_habits_count = db.session.query(Habit).filter_by(active=True).count()
+        inactive_habits_count = total_habits - active_habits_count
+
+        longest_streak = db.session.query(func.max(HabitStatistics.best_streak)).scalar()
+
+        if longest_streak is None:
+            longest_streak = 0
+
+        average_completion_rate = db.session.query(
+            func.avg(HabitStatistics.success_rate)
+        ).scalar()
+
+        if average_completion_rate is None:
+            average_completion_rate = 0.0
+        else:
+            average_completion_rate = round(average_completion_rate, 2)
+
+        response_data = {
+            "total_habits": total_habits,
+            "active_habits_count": active_habits_count,
+            "completed_habits_count": inactive_habits_count,
+            "longest_streak": longest_streak,
+            "average_completion_rate": average_completion_rate
+        }
+
+        return jsonify(response_data), 200
+
+    except Exception as e:
+        print(f"Error fetching global statistics: {e}")
+        return jsonify({"error": f"Failed to fetch statistics: {str(e)}"}), 500
 
 
 @habits_bp.route("/habits/<int:habit_id>", methods=["GET"])
