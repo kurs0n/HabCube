@@ -26,6 +26,29 @@ class FrequencyType(str, Enum):
         return self.value
 
 
+class HabitType(str, Enum):
+    """Habit category types"""
+
+    WATER = "water"
+    CODE = "code"
+    SPORT = "sport"
+    LANGUAGE = "language"
+    READ = "read"
+
+    @classmethod
+    def choices(cls):
+        """Return list of all type choices"""
+        return [habit_type.value for habit_type in cls]
+
+    @classmethod
+    def is_valid(cls, value):
+        """Check if value is a valid habit type"""
+        return value in cls.choices()
+
+    def __str__(self):
+        return self.value
+
+
 class HabitIcon(str, Enum):
     """Available icons for habits"""
 

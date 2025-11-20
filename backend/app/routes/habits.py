@@ -141,6 +141,19 @@ def create_habit():
                 400,
             )
 
+        # Validate type
+        from app.models.enums import HabitType
+        habit_type = data.get("type", HabitType.WATER.value)
+        if habit_type and not HabitType.is_valid(habit_type):
+            return (
+                jsonify(
+                    {
+                        "error": f"Invalid type. Must be one of: {', '.join(HabitType.choices())}"
+                    }
+                ),
+                400,
+            )
+
         # Create DTO and validate
         dto = CreateHabitDTO(
             name=data.get("name"),
@@ -161,6 +174,7 @@ def create_habit():
             deadline_time=dto.deadline_time,
             frequency=dto.frequency,
             icon=dto.icon,
+            type=habit_type,
             active=True,
         )
 
