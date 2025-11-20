@@ -286,3 +286,326 @@ class TestHabitStatistics:
         data = response.get_json()
         assert "statistics" in data
         assert data["statistics"]["total_completions"] >= 1
+
+
+class TestGetActiveHabits:
+    """Test GET /api/v1/habits/active endpoint with frequency filtering"""
+
+    def test_get_active_habits_never_completed(self, client, app):
+        """Test that habits never completed are always ready"""
+        with app.app_context():
+            habit = Habit(name="New Habit", frequency="daily", active=True)
+            db.session.add(habit)
+            db.session.commit()
+
+        response = client.get("/api/v1/habits/active")
+        assert response.status_code == 200
+        data = response.get_json()
+        assert len(data["habits"]) == 1
+        assert data["habits"][0]["name"] == "New Habit"
+
+    def test_get_active_habits_daily_completed_today(self, client, app):
+        """Test that daily habit completed today is NOT in active list"""
+        with app.app_context():
+            from app.models.habit import HabitTask
+
+            habit = Habit(name="Daily Habit", frequency="daily", active=True)
+            db.session.add(habit)
+            db.session.flush()
+
+            # Complete it today
+            task = HabitTask(
+                habit_id=habit.id,
+                date=datetime.date.today(),
+                completed=True,
+                completion_time=datetime.datetime.utcnow()
+            )
+            db.session.add(task)
+            db.session.commit()
+
+        response = client.get("/api/v1/habits/active")
+        assert response.status_code == 200
+        data = response.get_json()
+        # Should be empty because completed today
+        assert len(data["habits"]) == 0
+
+    def test_get_active_habits_daily_completed_yesterday(self, client, app):
+        """Test that daily habit completed yesterday IS in active list"""
+        with app.app_context():
+            from app.models.habit import HabitTask
+
+            habit = Habit(name="Daily Habit", frequency="daily", active=True)
+            db.session.add(habit)
+            db.session.flush()
+
+            # Complete it yesterday
+            yesterday = datetime.date.today() - datetime.timedelta(days=1)
+            task = HabitTask(
+                habit_id=habit.id,
+                date=yesterday,
+                completed=True,
+                completion_time=datetime.datetime.utcnow() - datetime.timedelta(days=1)
+            )
+            db.session.add(task)
+            db.session.commit()
+
+        response = client.get("/api/v1/habits/active")
+        assert response.status_code == 200
+        data = response.get_json()
+        assert len(data["habits"]) == 1
+        assert data["habits"][0]["name"] == "Daily Habit"
+
+    def test_get_active_habits_hourly_not_ready(self, client, app):
+        """Test that hourly habit completed 30 minutes ago is NOT ready"""
+        with app.app_context():
+            from app.models.habit import HabitTask
+
+            habit = Habit(name="Hourly Habit", frequency="hourly", active=True)
+            db.session.add(habit)
+            db.session.flush()
+
+            # Complete it 30 minutes ago
+            thirty_min_ago = datetime.datetime.utcnow() - datetime.timedelta(minutes=30)
+            task = HabitTask(
+                habit_id=habit.id,
+                date=datetime.date.today(),
+                completed=True,
+                completion_time=thirty_min_ago
+            )
+            db.session.add(task)
+            db.session.commit()
+
+        response = client.get("/api/v1/habits/active")
+        assert response.status_code == 200
+        data = response.get_json()
+        assert len(data["habits"]) == 0
+
+    def test_get_active_habits_hourly_ready(self, client, app):
+        """Test that hourly habit completed 90 minutes ago IS ready"""
+        with app.app_context():
+            from app.models.habit import HabitTask
+
+            habit = Habit(name="Hourly Habit", frequency="hourly", active=True)
+            db.session.add(habit)
+            db.session.flush()
+
+            # Complete it 90 minutes ago
+            ninety_min_ago = datetime.datetime.utcnow() - datetime.timedelta(minutes=90)
+            task = HabitTask(
+                habit_id=habit.id,
+                date=datetime.date.today(),
+                completed=True,
+                completion_time=ninety_min_ago
+            )
+            db.session.add(task)
+            db.session.commit()
+
+        response = client.get("/api/v1/habits/active")
+        assert response.status_code == 200
+        data = response.get_json()
+        assert len(data["habits"]) == 1
+        assert data["habits"][0]["name"] == "Hourly Habit"
+
+    def test_get_active_habits_inactive_not_returned(self, client, app):
+        """Test that inactive habits are not returned"""
+        with app.app_context():
+            habit = Habit(name="Inactive Habit", frequency="daily", active=False)
+            db.session.add(habit)
+            db.session.commit()
+
+        response = client.get("/api/v1/habits/active")
+        assert response.status_code == 200
+        data = response.get_json()
+        assert len(data["habits"]) == 0
+
+    def test_get_active_habits_weekly_ready(self, client, app):
+        """Test that weekly habit completed 8 days ago IS ready"""
+        with app.app_context():
+            from app.models.habit import HabitTask
+
+            habit = Habit(name="Weekly Habit", frequency="weekly", active=True)
+            db.session.add(habit)
+            db.session.flush()
+
+            # Complete it 8 days ago
+            eight_days_ago = datetime.date.today() - datetime.timedelta(days=8)
+            task = HabitTask(
+                habit_id=habit.id,
+                date=eight_days_ago,
+                completed=True,
+                completion_time=datetime.datetime.utcnow() - datetime.timedelta(days=8)
+            )
+            db.session.add(task)
+            db.session.commit()
+
+        response = client.get("/api/v1/habits/active")
+        assert response.status_code == 200
+        data = response.get_json()
+        assert len(data["habits"]) == 1
+        assert data["habits"][0]["name"] == "Weekly Habit"
+
+    def test_get_active_habits_mixed_frequencies(self, client, app):
+        """Test multiple habits with different frequencies and completion states"""
+        with app.app_context():
+            from app.models.habit import HabitTask
+
+            # Ready: Daily habit completed yesterday
+            habit1 = Habit(name="Ready Daily", frequency="daily", active=True)
+            db.session.add(habit1)
+            db.session.flush()
+            task1 = HabitTask(
+                habit_id=habit1.id,
+                date=datetime.date.today() - datetime.timedelta(days=1),
+                completed=True,
+                completion_time=datetime.datetime.utcnow() - datetime.timedelta(days=1)
+            )
+            db.session.add(task1)
+
+            # Not ready: Hourly completed 30 min ago
+            habit2 = Habit(name="Not Ready Hourly", frequency="hourly", active=True)
+            db.session.add(habit2)
+            db.session.flush()
+            task2 = HabitTask(
+                habit_id=habit2.id,
+                date=datetime.date.today(),
+                completed=True,
+                completion_time=datetime.datetime.utcnow() - datetime.timedelta(minutes=30)
+            )
+            db.session.add(task2)
+
+            # Ready: Never completed
+            habit3 = Habit(name="Never Completed", frequency="daily", active=True)
+            db.session.add(habit3)
+
+            # Not returned: Inactive
+            habit4 = Habit(name="Inactive", frequency="daily", active=False)
+            db.session.add(habit4)
+
+            db.session.commit()
+
+        response = client.get("/api/v1/habits/active")
+        assert response.status_code == 200
+        data = response.get_json()
+        assert len(data["habits"]) == 2
+        habit_names = [h["name"] for h in data["habits"]]
+        assert "Ready Daily" in habit_names
+        assert "Never Completed" in habit_names
+        assert "Not Ready Hourly" not in habit_names
+        assert "Inactive" not in habit_names
+
+    def test_complete_habit_removes_from_active_daily(self, client, app):
+        """Test that completing a daily habit removes it from active list until next day"""
+        with app.app_context():
+            habit = Habit(name="Daily Task", frequency="daily", active=True)
+            db.session.add(habit)
+            db.session.flush()
+
+            # Create statistics
+            stats = HabitStatistics(habit_id=habit.id)
+            db.session.add(stats)
+            db.session.commit()
+            habit_id = habit.id
+
+        # Step 1: Habit should be in active list (never completed)
+        response = client.get("/api/v1/habits/active")
+        assert response.status_code == 200
+        data = response.get_json()
+        assert len(data["habits"]) == 1
+        assert data["habits"][0]["name"] == "Daily Task"
+
+        # Step 2: Complete the habit
+        response = client.post(f"/api/v1/habits/{habit_id}/complete")
+        assert response.status_code == 200
+
+        # Step 3: Habit should NOT be in active list anymore (completed today)
+        response = client.get("/api/v1/habits/active")
+        assert response.status_code == 200
+        data = response.get_json()
+        assert len(data["habits"]) == 0
+
+        # Step 4: Simulate next day by updating the task date to yesterday
+        with app.app_context():
+            from app.models.habit import HabitTask
+            task = HabitTask.query.filter_by(habit_id=habit_id).first()
+            task.date = datetime.date.today() - datetime.timedelta(days=1)
+            task.completion_time = datetime.datetime.utcnow() - datetime.timedelta(days=1)
+            db.session.commit()
+
+        # Step 5: Habit should be back in active list (new day)
+        response = client.get("/api/v1/habits/active")
+        assert response.status_code == 200
+        data = response.get_json()
+        assert len(data["habits"]) == 1
+        assert data["habits"][0]["name"] == "Daily Task"
+
+    def test_complete_habit_removes_from_active_hourly(self, client, app):
+        """Test that completing an hourly habit removes it from active list for 1 hour"""
+        with app.app_context():
+            habit = Habit(name="Hourly Task", frequency="hourly", active=True)
+            db.session.add(habit)
+            db.session.flush()
+
+            # Create statistics
+            stats = HabitStatistics(habit_id=habit.id)
+            db.session.add(stats)
+            db.session.commit()
+            habit_id = habit.id
+
+        # Step 1: Habit should be in active list
+        response = client.get("/api/v1/habits/active")
+        assert response.status_code == 200
+        data = response.get_json()
+        assert len(data["habits"]) == 1
+
+        # Step 2: Complete the habit
+        response = client.post(f"/api/v1/habits/{habit_id}/complete")
+        assert response.status_code == 200
+
+        # Step 3: Should NOT be in active list (just completed)
+        response = client.get("/api/v1/habits/active")
+        assert response.status_code == 200
+        data = response.get_json()
+        assert len(data["habits"]) == 0
+
+        # Step 4: Simulate 90 minutes passing
+        with app.app_context():
+            from app.models.habit import HabitTask
+            task = HabitTask.query.filter_by(habit_id=habit_id).first()
+            task.completion_time = datetime.datetime.utcnow() - datetime.timedelta(minutes=90)
+            db.session.commit()
+
+        # Step 5: Should be back in active list (90 minutes passed)
+        response = client.get("/api/v1/habits/active")
+        assert response.status_code == 200
+        data = response.get_json()
+        assert len(data["habits"]) == 1
+        assert data["habits"][0]["name"] == "Hourly Task"
+
+    def test_complete_habit_twice_same_day_rejected(self, client, app):
+        """Test that completing the same habit twice on the same day is rejected"""
+        with app.app_context():
+            habit = Habit(name="Daily Task", frequency="daily", active=True)
+            db.session.add(habit)
+            db.session.flush()
+
+            # Create statistics
+            stats = HabitStatistics(habit_id=habit.id)
+            db.session.add(stats)
+            db.session.commit()
+            habit_id = habit.id
+
+        # Complete once - should work
+        response = client.post(f"/api/v1/habits/{habit_id}/complete")
+        assert response.status_code == 200
+
+        # Complete again - should fail
+        response = client.post(f"/api/v1/habits/{habit_id}/complete")
+        assert response.status_code == 400
+        data = response.get_json()
+        assert "already completed today" in data["error"].lower()
+
+        # Should still not be in active list
+        response = client.get("/api/v1/habits/active")
+        assert response.status_code == 200
+        data = response.get_json()
+        assert len(data["habits"]) == 0

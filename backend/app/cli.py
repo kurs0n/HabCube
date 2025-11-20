@@ -6,34 +6,43 @@ import click
 from flask.cli import with_appcontext
 
 from app import db
-from app.models.enums import FrequencyType, HabitIcon
+from app.models.enums import FrequencyType, HabitIcon, HabitType
 from app.models.habit import Habit, HabitStatistics
 
 
 @click.command("seed")
 @with_appcontext
 def seed_db():
-    """Seed the database with sample data (always clears existing data first)"""
+    """Seed the database with sample data (soft reset - deactivates existing habits)"""
+    from app.models.habit import HabitTask
+
     existing_count = db.session.query(Habit).count()
 
     if existing_count > 0:
-        click.echo(f"Clearing {existing_count} existing habits...")
-        db.session.query(HabitStatistics).delete()
-        db.session.query(Habit).delete()
-        db.session.commit()
-        click.echo("✓ Existing data cleared.")
+        click.echo(f"Soft resetting {existing_count} existing habits...")
+        # Delete all tasks
+        tasks_deleted = db.session.query(HabitTask).delete()
+        click.echo(f"✓ Deleted {tasks_deleted} habit tasks")
 
-    # Reset auto-increment sequences to start from 1
-    click.echo("Resetting ID sequences...")
-    db.session.execute(db.text("ALTER SEQUENCE habits_id_seq RESTART WITH 1"))
-    db.session.execute(db.text("ALTER SEQUENCE habit_statistics_id_seq RESTART WITH 1"))
-    db.session.commit()
-    click.echo("✓ ID sequences reset.")
+        # Deactivate all habits
+        db.session.query(Habit).update({"active": False})
+
+        # Reset statistics
+        db.session.query(HabitStatistics).update({
+            "total_completions": 0,
+            "current_streak": 0,
+            "best_streak": 0,
+            "last_completed": None,
+            "success_rate": 0.0
+        })
+        db.session.commit()
+        click.echo("✓ Existing habits deactivated and reset.")
 
     click.echo("Seeding database with sample habits...")
     frequencies = [freq.name for freq in FrequencyType]  # Use enum names (uppercase)
     colors = ["red", "blue", "green", "yellow", "purple", "orange", "gray"]
     icons = [icon.value for icon in HabitIcon]  # Get all available icons
+    types = [habit_type.value for habit_type in HabitType]  # Get all available types
 
     for i in range(1, 61):
         freq = random.choice(frequencies)
@@ -42,6 +51,7 @@ def seed_db():
             description=f"Description for habit {i}",
             frequency=freq,
             icon=random.choice(icons),
+            type=random.choice(types),
             active=bool(random.getrandbits(1)),
             deadline_time=datetime.time(
                 hour=random.randint(0, 23), minute=random.choice([0, 15, 30, 45])
