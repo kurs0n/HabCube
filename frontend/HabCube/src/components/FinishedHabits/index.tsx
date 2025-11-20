@@ -5,74 +5,20 @@ import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { SafeAreaView } from "react-native-safe-area-context";
 import Icon from "react-native-vector-icons/Ionicons";
 import AppLogo from "../AppLogo";
+import { useFinishedHabits } from "../../hooks/useFinishedHabits";
+import { IFinishedHabit } from "../../types/habit.types";
 
 type Props = {
   navigation: NativeStackNavigationProp<RootStackParamList, "FinishedHabits">;
 };
-
-interface FinishedHabit {
-  id: number;
-  name: string;
-  icon: string;
-  totalDays: number;
-  completedDays: number;
-  finishedDate: string;
-  isSuccess: boolean;
-}
-
-const FINISHED_HABITS: FinishedHabit[] = [
-  {
-    id: 1,
-    name: "Morning Run",
-    icon: "fitness",
-    totalDays: 21,
-    completedDays: 21,
-    finishedDate: "2025-10-20",
-    isSuccess: true,
-  },
-  {
-    id: 2,
-    name: "Read 30 Minutes",
-    icon: "book",
-    totalDays: 21,
-    completedDays: 21,
-    finishedDate: "2025-10-15",
-    isSuccess: true,
-  },
-  {
-    id: 3,
-    name: "Drink 8 Glasses Water",
-    icon: "water",
-    totalDays: 21,
-    completedDays: 20,
-    finishedDate: "2025-10-10",
-    isSuccess: false,
-  },
-  {
-    id: 4,
-    name: "Meditation",
-    icon: "leaf",
-    totalDays: 21,
-    completedDays: 21,
-    finishedDate: "2025-10-05",
-    isSuccess: true,
-  },
-  {
-    id: 5,
-    name: "Early Sleep",
-    icon: "bed",
-    totalDays: 21,
-    completedDays: 4,
-    finishedDate: "2025-09-28",
-    isSuccess: false,
-  },
-];
 
 const FinishedHabitsScreen = ({ navigation }: Props) => {
   const handleAdd = () => navigation.navigate("AddHabit");
   const handleFinishedHabits = () => navigation.navigate("FinishedHabits");
   const handleStats = () => navigation.navigate("HabitsStats");
   const handleHome = () => navigation.navigate("MainPage");
+
+  const { habits, loading, error } = useFinishedHabits();
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
@@ -83,7 +29,8 @@ const FinishedHabitsScreen = ({ navigation }: Props) => {
     });
   };
 
-  const renderHabitCard = (habit: FinishedHabit) => (
+
+  const renderHabitCard = (habit: IFinishedHabit) => (
     <View key={habit.id} style={styles.habitCard}>
       <View style={styles.habitHeader}>
         <View style={styles.iconContainer}>
@@ -93,13 +40,13 @@ const FinishedHabitsScreen = ({ navigation }: Props) => {
           <View style={styles.habitNameRow}>
             <Text style={styles.habitName}>{habit.name}</Text>
             <Icon
-              name={habit.isSuccess ? "checkmark-circle" : "close-circle"}
+              name={habit.success_status ? "checkmark-circle" : "close-circle"}
               size={30}
-              color={habit.isSuccess ? "#4CAF50" : "#F44336"}
+              color={habit.success_status ? "#4CAF50" : "#F44336"}
             />
           </View>
           <Text style={styles.finishedDate}>
-            Finished: {formatDate(habit.finishedDate)}
+            Finished: {formatDate(habit.finish_date)}
           </Text>
         </View>
       </View>
@@ -109,12 +56,12 @@ const FinishedHabitsScreen = ({ navigation }: Props) => {
           <View
             style={[
               styles.progressBarFill,
-              { width: `${(habit.completedDays / habit.totalDays) * 100}%` },
+              { width: `${habit.best_streak >= 21 ? 100 : (habit.best_streak / 21) * 100}%` },
             ]}
           />
         </View>
         <Text style={styles.progressText}>
-          {habit.completedDays} / {habit.totalDays} days
+          {habit.best_streak} / 21 days
         </Text>
       </View>
     </View>
@@ -127,7 +74,7 @@ const FinishedHabitsScreen = ({ navigation }: Props) => {
       <Text style={styles.title}>Finished Habits</Text>
 
       <ScrollView style={styles.scrollView}>
-        {FINISHED_HABITS.map(renderHabitCard)}
+        {habits.map(renderHabitCard)}
       </ScrollView>
 
       <SafeAreaView edges={["bottom"]} style={styles.navbarContainer}>

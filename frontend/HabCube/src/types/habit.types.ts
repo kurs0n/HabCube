@@ -31,3 +31,22 @@ export interface IHabitStatistics {
   last_completed: string | null;
   updated_at: string;
 }
+
+export interface IFinishedHabit {
+  id: number;
+  name: string;
+  description?: string;
+  icon: string;
+  best_streak: number;
+  success_status: boolean;
+  finish_date: string;
+  color: string;
+}
+
+export interface IHabitsStats {
+  active_habits_count: number;
+  average_completion_rate: number;
+  completed_habits_count: number;
+  longest_streak: number;
+  total_habits: number;
+}
