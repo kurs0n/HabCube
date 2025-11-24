@@ -170,46 +170,75 @@ def switch_previous_habit():
     if(active_habit_index < 0):
         active_habit_index = len(active_habits) - 1 
 
+def show_loading_screen():
+    display_oled1.fill(0)
+    display_oled2.fill(0) 
+    text_length = len("Loading Habits...") * 8
+    x_text = (128 - text_length) // 2
+    y_text = 22
+    if(x_text < 0):
+        x_text = 0
+    display_oled1.text("Loading Habits...",x_text,y_text,1)
+    display_oled2.text("Loading Habits...",x_text,y_text,1)
+    display_oled1.show()    
+    display_oled2.show() 
+
 def loop():
     global gyro_offset_z, angle_z, last_time
-    gyro_offset_z = calibrate_gyro()
+    
+    gyro_offset_raw = calibrate_gyro() 
+    
     angle_z = 0.0
     last_time = utime.ticks_ms()
 
-    while(True):
+    while True:
         if(button1.value() == 0 and button2.value() == 0):
-            print("reset")
+            show_loading_screen()
+            load_active_habits() 
+            display_active_habit()
+            angle_z = 0
         elif (button1.value() == 0):
             switch_previous_habit()
             display_active_habit()
             utime.sleep_ms(100)
+            angle_z = 0
         elif (button2.value() == 0):
             switch_next_habit()
             display_active_habit()
             utime.sleep_ms(100)
+            angle_z = 0
 
+        
         current_time = utime.ticks_ms()
-        delta_t = utime.ticks_diff(current_time, last_time) / 1000.0 
+        dt = utime.ticks_diff(current_time, last_time) / 1000.0 
         last_time = current_time
 
-        gyro_z_velocity = sensor.gyro[2] - gyro_offset_z
+        gyro_z_raw = sensor.gyro[2]
         
-        angle_z += gyro_z_velocity * delta_t
+        gyro_z_rad = gyro_z_raw - gyro_offset_raw
+        
+        gyro_z_deg = gyro_z_rad * 57.296
 
-        if abs(angle_z) >= 0.55:        
+
+        if abs(gyro_z_deg) < 0.5:
+            gyro_z_deg = 0
+
+        angle_z += gyro_z_deg * dt
+
+        if abs(angle_z) >= 160:        
+            print("Rotation!")
+            
             _thread.start_new_thread(music.play_mario_main_theme,(buzzer,))
             play_sui_animation()
 
-            complete_and_switch_habit() 
-            
+            # complete_and_switch_habit()
+
             display_active_habit()
 
-            gyro_offset_z = calibrate_gyro()
             angle_z = 0.0
-            last_time = utime.ticks_ms()
+            utime.sleep_ms(1000) 
+            last_time = utime.ticks_ms() 
 
-            utime.sleep_ms(1000)
-
-        utime.sleep_ms(20)        
+        utime.sleep_ms(10)
 init()
 loop()
