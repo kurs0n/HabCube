@@ -10,6 +10,8 @@ import requests
 import json
 import _thread
 import icons
+import gc
+from captive_portal import CaptivePortal
 
 gyro_offset_z = 0
 angle_z = 0
@@ -40,15 +42,44 @@ button1 = Pin(17,Pin.IN, Pin.PULL_UP)
 button2 = Pin(16,Pin.IN, Pin.PULL_UP)
 sensor = MPU9250(i2c)
 def init():
+
+    # portal = CaptivePortal()
+
+    # creds = portal.start()
+
+    # crashing later when sending request
+
+
+    # wlan = network.WLAN(network.STA_IF)
+    # wlan.active(True)
+    # wlan.connect(creds.ssid, creds.password)
+    
+    # connection_timeout = 10
+    # while connection_timeout > 0:
+    #     if wlan.status() >= 3:
+    #         break
+    #     connection_timeout -= 1
+    #     print('Waiting for Wi-Fi connection...')
+    #     sleep(1)
+
+    # if wlan.status() != 3:
+    #     raise RuntimeError('Failed to establish a network connection')
+    # else:
+    #     print('Connection successful!')
+    #     network_info = wlan.ifconfig()
+    #     print('IP address:', network_info[0])
+
+
     wlan = network.WLAN(network.STA_IF)
     wlan.active(True)
+    print(wlan.scan())
 
-    ssid = b"Tenda_8CE3B0"
+    ssid = 'Tenda_8CE3B0'
     password = 'everycake306'
 
     wlan.connect(ssid, password)
 
-    connection_timeout = 10
+    connection_timeout = 100
     while connection_timeout > 0:
         if wlan.status() >= 3:
             break
@@ -69,7 +100,9 @@ def init():
 
 def load_active_habits():
     global active_habits
+    print("test")
     response = requests.get("https://backend-1089871134307.europe-west1.run.app/api/v1/habits/active")
+    print(response)
     content = response.content
     habits = json.loads(content)
     active_habits = habits["habits"]
