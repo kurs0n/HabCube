@@ -10,8 +10,6 @@ import requests
 import json
 import _thread
 import icons
-import gc
-from captive_portal import CaptivePortal
 
 gyro_offset_z = 0
 angle_z = 0
@@ -47,9 +45,6 @@ def init():
 
     # creds = portal.start()
 
-    # crashing later when sending request
-
-
     # wlan = network.WLAN(network.STA_IF)
     # wlan.active(True)
     # wlan.connect(creds.ssid, creds.password)
@@ -74,8 +69,8 @@ def init():
     wlan.active(True)
     print(wlan.scan())
 
-    ssid = 'Tenda_8CE3B0'
-    password = 'everycake306'
+    ssid = 'Czarnuch'
+    password = 'marcela2115'
 
     wlan.connect(ssid, password)
 
@@ -100,9 +95,7 @@ def init():
 
 def load_active_habits():
     global active_habits
-    print("test")
     response = requests.get("https://backend-1089871134307.europe-west1.run.app/api/v1/habits/active")
-    print(response)
     content = response.content
     habits = json.loads(content)
     active_habits = habits["habits"]
