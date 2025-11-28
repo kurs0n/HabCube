@@ -21,6 +21,7 @@ import { AVAILABLE_ICONS } from "../../assets/data/icons";
 import AppLogo from "../AppLogo";
 import { ICreateHabitDTO, FrequencyType } from "../../types/habit.types";
 import { useCreateHabit } from "../../hooks/useCreateHabit";
+import { Toast } from "react-native-toast-message/lib/src/Toast";
 
 type Props = {
   navigation: NativeStackNavigationProp<RootStackParamList, "AddHabit">;
@@ -35,6 +36,7 @@ const AddHabitScreen = ({ navigation }: Props) => {
 
   const [habitName, setHabitName] = React.useState("");
   const [habitDescription, setHabitDescription] = React.useState("");
+  const [habitIconType, setHabitIconType] = React.useState("Sport");
   const [habitFrequency, setHabitFrequency] = React.useState<FrequencyType>("daily");
   const [habitStartDate, setHabitStartDate] = React.useState(new Date());
   const [showDatePicker, setShowDatePicker] = React.useState(false);
@@ -50,13 +52,28 @@ const AddHabitScreen = ({ navigation }: Props) => {
         icon: habitIcon,
         frequency: habitFrequency,
         created_at: habitStartDate.toISOString(),
+        type: habitIconType,
       }
       const response = await addHabit(habitData);
       if (response) {
-        navigation.navigate("MainPage");
+        Toast.show({
+          type: 'success',
+          text1: 'Habit added successfully!',
+          position: 'bottom',
+          visibilityTime:2000,
+        });
+        setTimeout(() => {
+          navigation.navigate("MainPage");
+        }, 2500);
       }
     } catch (err) {
       console.log("Error creating habit:", err);
+      Toast.show({
+        type: 'error',
+        text1: 'Failed to add habit.',
+        position: 'bottom',
+        visibilityTime:2000,
+      });
     }
   };
 
@@ -68,7 +85,7 @@ const AddHabitScreen = ({ navigation }: Props) => {
 
   return (
     <View style={styles.container}>
-      <ScrollView>
+      <ScrollView >
         <AppLogo />
         <Text style={styles.title}>Create New Habit</Text>
 
@@ -107,6 +124,19 @@ const AddHabitScreen = ({ navigation }: Props) => {
             </TouchableOpacity>
           ))}
         </View>
+
+        <Text style={styles.title}>Type of an activity:</Text>
+        <Picker
+          selectedValue={habitIconType}
+          onValueChange={(itemValue) => setHabitIconType(itemValue)}
+          style={styles.pickerContainer}
+        >
+          <Picker.Item label="Water" value="water" />
+          <Picker.Item label="Code" value="code" />
+          <Picker.Item label="Sport" value="sport" />
+          <Picker.Item label="Language" value="language" />
+          <Picker.Item label="Read" value="read" />
+        </Picker>
 
         <Text style={styles.title}>Frequency:</Text>
         <Picker

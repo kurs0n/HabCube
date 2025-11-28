@@ -70,10 +70,10 @@ const FinishedHabitsScreen = ({ navigation }: Props) => {
   return (
     <View style={styles.container}>
 
-      <AppLogo />
-      <Text style={styles.title}>Finished Habits</Text>
-
       <ScrollView style={styles.scrollView}>
+        <AppLogo />
+        <Text style={styles.title}>Finished Habits</Text>
+
         {habits.map(renderHabitCard)}
       </ScrollView>
 
@@ -101,8 +101,8 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
     color: "#000000",
     paddingHorizontal: 20,
-    paddingTop: 20,
-    paddingBottom: 10,
+    paddingTop: 5,
+    paddingBottom: 15,
   },
   scrollView: {
     flex: 1,

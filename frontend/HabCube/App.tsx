@@ -1,6 +1,3 @@
-import { StatusBar } from "expo-status-bar";
-import { StyleSheet, Text, View } from "react-native";
-import { SafeAreaProvider } from "react-native-safe-area-context";
 import WelcomeScreen from "./src/components/WelcomeScreen";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { NavigationContainer } from "@react-navigation/native";
@@ -8,6 +5,7 @@ import MainPageScreen from "./src/components/MainPage";
 import AddHabitScreen from "./src/components/AddHabit";
 import FinishedHabitsScreen from "./src/components/FinishedHabits";
 import HabitsStatsScreen from "./src/components/HabitsStats";
+import Toast from "react-native-toast-message";
 
 export type RootStackParamList = {
   Welcome: undefined;
@@ -32,6 +30,7 @@ export default function App() {
         <Stack.Screen name="FinishedHabits" component={FinishedHabitsScreen} />
         <Stack.Screen name="HabitsStats" component={HabitsStatsScreen} />
       </Stack.Navigator>
+      <Toast />
     </NavigationContainer>
   );
 }

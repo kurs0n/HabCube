@@ -40,6 +40,15 @@ services:
     networks:
       - habcube-network
 
+  frontend:
+      build:
+        context: ./frontend/HabCube
+        dockerfile: Dockerfile
+      ports:
+        - "3000:3000"
+      depends_on:
+        - backend
+
   backend:
     build:
       context: ./backend
@@ -116,3 +125,4 @@ volumes:
     name: habcube-redis-data
   backend_logs:
     name: habcube-backend-logs
+

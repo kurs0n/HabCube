@@ -55,6 +55,7 @@ const MainPageScreen = ({ navigation }: Props) => {
         </View>
         <View style={styles.habitInfo}>
           <Text style={styles.habitName}>{habit.name}</Text>
+          <Text style={styles.habitDescription}>{habit.description}</Text>
           <Text style={styles.habitFrequency}>
             {habit.frequency.charAt(0).toUpperCase() + habit.frequency.slice(1)} •
             Streak: {habit.statistics?.current_streak} days
@@ -94,10 +95,10 @@ const MainPageScreen = ({ navigation }: Props) => {
   return (
     <View style={styles.container}>
 
-      <AppLogo />
-      <Text style={styles.title}>Active Habits</Text>
-
       <ScrollView style={styles.scrollView}>
+        <AppLogo />
+        <Text style={styles.title}>Active Habits</Text>
+
         {habits.map(renderHabitItem)}
       </ScrollView>
 
@@ -126,8 +127,8 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
     color: "#000000",
     paddingHorizontal: 20,
-    paddingTop: 20,
-    paddingBottom: 10,
+    paddingTop: 5,
+    paddingBottom: 15,
   },
   scrollView: {
     flex: 1,
@@ -148,6 +149,11 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     marginBottom: 12,
+  },
+  habitDescription: {
+    fontSize: 14,
+    marginVertical: 6,
+    marginRight: 4,
   },
   iconContainer: {
     width: 50,

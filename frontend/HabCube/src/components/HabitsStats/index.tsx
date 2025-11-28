@@ -23,10 +23,10 @@ const HabitsStatsScreen = ({ navigation }: Props) => {
   return (
     <View style={styles.container}>
 
-      <AppLogo />
-      <Text style={styles.title}>Statistics</Text>
-
       <ScrollView style={styles.scrollView}>
+        <AppLogo />
+        <Text style={styles.title}>Statistics</Text>
+
         <View style={styles.statCard}>
           <Text style={styles.statLabel}>Active habits</Text>
           <Text style={styles.statValue}>{stats?.active_habits_count}</Text>
@@ -72,8 +72,8 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
     color: "#000000",
     paddingHorizontal: 20,
-    paddingTop: 20,
-    paddingBottom: 20,
+    paddingTop: 5,
+    paddingBottom: 15,
   },
   scrollView: {
     flex: 1,

@@ -19,6 +19,7 @@ export interface ICreateHabitDTO {
   frequency: FrequencyType;
   created_at: string;
   deadline_time?: string;
+  type: string;
 }
 
 export interface IHabitStatistics {
