@@ -115,3 +115,29 @@ Szymon:
     - Dodanie do formularza pola z typem ikonki
 Piotr i Patryk: 
     - Odebranie wydrukowanej kostki i połączenie z komponentami
+    
+Zadania Ukończone (20.11.2025 - 27.11.2025):
+    Szymon:
+        - Poprawki stylistyczne 
+        - Frontend wrzucony do kontenera docker
+        - Dodanie do formularza pola z typem ikonki
+    Aleks i Paweł:
+        - Testy jednostkowe
+        - Drobne poprawki na backendzie
+    Piotr i Patryk:
+        - Spotkanie w celu złozenia kostki (nieudane)
+    Patryk:
+        - Biznesplan
+        - Start Implementacji Captive Portalu
+
+Zadania Todo:
+    Szymon:
+        - Efekt przy dodaniu nawyku
+    Aleks i Paweł:
+        - End to end testy
+    Piotr i Patryk: 
+        - Zamówienie kostki
+        - Złożenie kostki
+        - Finalna wersja kostki
+    Patryk:
+        - Ukończony Captive portal

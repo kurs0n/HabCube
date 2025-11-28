@@ -474,3 +474,6 @@ Powinno banglać
   - Testy walidacji danych
   - Testy błędnych przypadków (404, 400)
   - Testy trackowania statystyk i streaków
+
+
+https://github.com/amora-labs/micropython-captive-portal/blob/master/captive.py 
