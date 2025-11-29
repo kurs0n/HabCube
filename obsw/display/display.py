@@ -17,18 +17,37 @@ display_oled1 = SH1106_SPI(128, 64, spi_oled1, dc_oled1, rst_oled1, cs_oled1, ro
 display_oled2 = SH1106_SPI(128, 64, spi_oled2, dc_oled2, rst_oled2, cs_oled2, rotate=0, delay=0)
 
 def display_text_centered(text):
-    global display_oled1,display_oled2
+    global display_oled1, display_oled2
+    
     display_oled1.fill(0)
     display_oled2.fill(0)
 
-    text_length = len(text) * 8
-    x_text = (128 - text_length) // 2
-    y_text = 28
-    if(x_text < 0):
-        x_text = 0
+    SCREEN_WIDTH = 128
+    SCREEN_HEIGHT = 64
+    CHAR_WIDTH = 8
+    CHAR_HEIGHT = 8
+    MAX_CHARS_PER_LINE = SCREEN_WIDTH // CHAR_WIDTH  
 
-    display_oled1.text(text, x_text, y_text, 1)
-    display_oled2.text(text, x_text, y_text, 1)
+    lines = []
+    for i in range(0, len(text), MAX_CHARS_PER_LINE):
+        lines.append(text[i:i + MAX_CHARS_PER_LINE])
+    
+    total_text_height = len(lines) * CHAR_HEIGHT
+    y_start = (SCREEN_HEIGHT - total_text_height) // 2
+    
+    for i, line in enumerate(lines):
+        line_width = len(line) * CHAR_WIDTH
+        x_pos = (SCREEN_WIDTH - line_width) // 2
+
+        y_pos = y_start + (i * CHAR_HEIGHT)
+        
+        if i > 0:
+            display_oled1.text("-" +line, x_pos, y_pos, 1)
+            display_oled2.text("-" +line, x_pos, y_pos, 1)
+        else:
+            display_oled1.text(line, x_pos, y_pos, 1) 
+            display_oled2.text(line, x_pos, y_pos, 1) 
+
     display_oled1.show()
     display_oled2.show()
 

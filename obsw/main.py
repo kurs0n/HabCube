@@ -4,7 +4,6 @@ from machine import Pin, PWM, I2C, SPI
 import music
 import utime
 from mpu9250 import MPU9250
-import framebuf
 import requests
 import json
 import _thread
@@ -121,7 +120,6 @@ def switch_previous_habit():
     active_habit_index -= 1
     if(active_habit_index < 0):
         active_habit_index = len(active_habits) - 1 
-
 
 
 def loop():
