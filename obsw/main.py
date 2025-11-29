@@ -27,6 +27,7 @@ i2c = I2C(0,sda=Pin(0),scl=Pin(1))
 button1 = Pin(17,Pin.IN, Pin.PULL_UP)
 button2 = Pin(16,Pin.IN, Pin.PULL_UP)
 sensor = MPU9250(i2c)
+
 def init():
     try: 
         f = open('wlan.info')
