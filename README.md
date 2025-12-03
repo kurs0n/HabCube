@@ -1,168 +1,134 @@
 # HabCube
 
-# Description
+## Description
 
-The "intelligent cube" is an IoT device that supports users in forming and maintaining daily habits. Habits are defined in a mobile application, which allows for their configuration and the presentation of statistics regarding progress.
+The "Intelligent Cube" is an IoT device that supports users in forming and maintaining daily habits. Habits are defined in a mobile application, which allows for configuration and the presentation of statistics regarding progress.
 
-# Introduction
+## Introduction
 
-The goal of this project is to create a complete Internet of Things (IoT) system designed to operate on a local network. The "Intelligent Cube" is an IoT device that supports users in building and maintaining daily habits. The system combines hardware (the physical cube) with a mobile application that allows users to define, configure, and track their habits, as well as view statistics on their progress.
+The goal of this project is to create a complete Internet of Things (IoT) system designed to operate on a local network. The system combines hardware (the physical cube) with a mobile application that allows users to define, configure, and track their habits, as well as view statistics on their progress.
 
 The project integrates knowledge from electronics, computer science, network programming, and embedded systems engineering. The work covers both the hardware layer (the cube's design and implementation) and the software layer (server-side communication, backend, mobile user interface, and overall system integration).
 
-# Project Goals
+## Project Goals
 
-## General Goals
-
+### General Goals
 - To create a fully functional IoT system operating within a local network.
-
 - To achieve high effectiveness in helping users build and sustain positive habits.
-
 - To design a system that increases user motivation and engagement in the process of self-improvement.
-
 - To develop a final product that genuinely improves users' quality of life by supporting them in achieving their habit-related goals.
 
-## Educational Goals
-
+### Educational Goals
 - To understand the practical aspects of building end-to-end IoT systems.
-
 - To learn how to integrate hardware and software into a single cohesive system.
-
 - To develop teamwork and project management skills.
-
 - To gain experience in planning, implementing, testing, and documenting a complex technical project.
-
 - To learn which motivational mechanisms are most effective in habit formation and how to design engaging and intuitive user interactions.
 
-# Project Scope
+## Project Scope
 
-## Key Features
-
+### Key Features
 - **Habit Configuration**: Defining and managing habits through a mobile application.
-
 - **Progress Tracking**: Monitoring user progress and presenting it through statistics.
-
 - **Motivational Feedback**: Providing users with visual, sound, and light-based "dopamine hits" to reinforce positive actions.
 
-## System Architecture
-
+### System Architecture
 The system consists of three main components:
-
-- The Intelligent Cube: A physical device based on an ESP32 microcontroller that acts as the primary user interaction point.
-
-- Central Server: A backend service responsible for handling communication with the cube, processing data, and storing user statistics.
-
-- Mobile Application: A user interface for configuring the cube, defining habits, and viewing progress data.
+1.  **The Intelligent Cube**: A physical device based on an ESP32 microcontroller that acts as the primary user interaction point.
+2.  **Central Server**: A backend service responsible for handling communication with the cube, processing data, and storing user statistics.
+3.  **Mobile Application**: A user interface for configuring the cube, defining habits, and viewing progress data.
 
 All components communicate over a local Wi-Fi network.
 
-# Tools and Technologies
+---
 
-Hardware: ESP32, 4 OLED Screens(I2C, SPI), gyroscope, Multiplexer, 2 Tact switches, audio amplifier, speaker, leds.
+## Tools and Technologies
 
-Software:
+### Software / Backend
+* **Language:** Python 3.9+
+* **Framework:** Flask
+* **Database ORM:** SQLAlchemy
+* **API Documentation:** Flasgger (Swagger UI)
+* **Serialization:** Python Dataclasses (DTOs)
+* **Deployment:** Google Cloud Run (Dockerized)
 
-Backend: To be determined Python with FastAPI.
+### Mobile App / UI
+* **Technology:** React Native (To be determined/finalized)
 
-Mobile App/UI: To be determined.
+### Database
+* **Engine:** PostgreSQL 13+
+* **Production:** Google Cloud SQL
+* **Caching:** Redis (Google Cloud Memorystore)
 
-Database: PostgreSQL.
+### Hardware
+* **Microcontroller:** ESP32
+* **Peripherals:** 4 OLED Screens (I2C, SPI), Gyroscope, Multiplexer, 2 Tact switches, Audio amplifier, Speaker, LEDs.
 
-Project Management: GitHub Project (Kanban board).
-
-Version Control: Git, GitHub.
-
-# Expected Results
-
-The final outcome of the project will be a functional IoT system that enables:
-
-- Configuration and management of daily habits via a mobile app.
-
-- Physical interaction with the cube to confirm habit completion.
-
-- Real-time motivational feedback to the user.
-
-- Visualization of progress data and statistics.
-
-# Team
-
-Piotr Ziobrowski - embedded programming
-
-Szymon Domagała - frontend, UI
-
-Paweł Klocek - database, documentation
-
-Aleksy Dąda - backend, docker
-
-Patryk Kurek - hardware and embedded programmming and tech menago
+### DevOps & Management
+* **Containerization:** Docker, Docker Compose
+* **CI/CD:** GitHub Actions
+* **Version Control:** Git, GitHub
+* **Project Management:** GitHub Projects (Kanban board)
 
 ---
 
 ## Development Setup
 
-### Konfiguracja środowiska
+### Environment Configuration
 
-Polecam podpiac pre-commit (jest niżej how-to)
+It is recommended to enable pre-commit hooks (instructions below).
 
-#### WAŻNE:
-
-W pierwszej kolejnosci uruchom skrypt setup, który automatycznie doda export CURRENT_UID do ~/.bashrc (unikniemy potem ew. problemow z permissions do plikow i folderow):
+**IMPORTANT:**
+First, run the setup script which automatically adds `export CURRENT_UID` to your `~/.bashrc` (this avoids permission issues with files and folders later):
 
 ```bash
 ./setup-env.sh
 source ~/.bashrc
 ```
 
-### Pierwsze uruchomienie
-
+### First Run
 ```bash
-# 1. Build obrazu
+# 1. Build the image
 docker-compose up -d --build
 
-# 2. Status kontenerow (lub w GUI)
+# 2. Check container status (or use GUI)
 docker-compose ps
 
-# 3. Logi
+# 3. View logs
 docker-compose logs -f backend
 
-# 4. Check apki
+# 4. Check app health
 curl http://localhost:5000/health
 ```
-
-### Uruchomienie
-
+### Running the Application
 ```bash
-# Można uruchomić tak lub MAKEFILE'em
+# You can run it via Docker Compose or using the MAKEFILE
 docker-compose up -d
 
 # Stop
 docker-compose down
 ```
-
-### Użycie Makefile (polecanko)
-
-Makefile automatycznie eksportuje CURRENT_UID:
-
+### Using Makefile (Recommended)
+The Makefile automatically exports CURRENT_UID:
 ```bash
-make init      # Pierwsze uruchomienie
-make up        # Uruchom
-make down      # Zatrzymaj
-make logs      # Zobacz logi
-make test      # Uruchom testy
-make help      # Zobacz wszystkie komendy
+make init      # First run / Initialization
+make up        # Start services
+make down      # Stop services
+make logs      # View logs
+make test      # Run tests
+make help      # View all commands
 ```
+### Services Access
+Backend: http://localhost:5000
 
-### Serwisy
+Adminer (DB UI): http://localhost:8080
 
-- Backend: http://localhost:5000
-- Adminer (DB UI): http://localhost:8080
-- PostgreSQL: localhost:5432
-- Redis: localhost:6379
+PostgreSQL: localhost:5432
 
-### Komendy
-
+Redis: localhost:6379
+### Common Commands
 ```bash
-# Basic
+# Basic Docker
 docker-compose up -d
 docker-compose down
 docker-compose logs -f
@@ -172,10 +138,10 @@ docker-compose ps
 docker-compose build
 docker-compose up -d --build
 
-# Shell
+# Shell Access
 docker-compose exec backend bash
 
-# Testy i CQ
+# Tests and Code Quality
 docker-compose exec backend pytest
 docker-compose exec backend pytest --cov=app
 docker-compose exec backend flake8 app/
@@ -183,92 +149,79 @@ docker-compose exec backend black app/
 docker-compose exec backend pylint app/
 docker-compose exec backend mypy app/
 
-# Baza danych
+# Database Management
 docker-compose exec postgres psql -U habcube_user -d habcube
-docker-compose exec backend flask db migrate -m "opis"
+docker-compose exec backend flask db migrate -m "description"
 docker-compose exec backend flask db upgrade
 
-# Makefile też jest
+# Makefile
 make help
 ```
-
-### Pre-commit hook
-
-Pre-commit hook uruchamia checki kodu
-
+### Pre-commit Hook
+The pre-commit hook runs code quality checks automatically.
 ```bash
-# 1. Utworzenie symlinku do hooka
+# 1. Create a symlink to the hook
 ln -sf ../../pre-commit .git/hooks/pre-commit
 
-# 2. Permissions
+# 2. Grant permissions
 chmod +x pre-commit
 ```
+### Checks performed:
 
-Sprawdza:
+Black (formatting), isort (import sorting)
 
-- Black (formatowanie), isort (sortowanie importów)
-- Flake8 (style), Pylint (jakość), MyPy (typy)
+Flake8 (style), Pylint (quality), MyPy (types)
 
-Można też uruchamiać ręcznie:
-
+You can also run these manually:
 ```bash
-make lint      # Sprawdź kod
-make format    # Auto-formatowanie
-make test      # Uruchom testy
-make quality   # all ekskljuziw
+make lint      # Check code
+make format    # Auto-format
+make test      # Run tests
+make quality   # Run all checks
 ```
----
-# Baza danych
-### Table: `habits`
-Main table containing defined habits.
 
+## Database Schema
+
+### Table: habits
 | Column | Type | Description |
-|--------|------|-------------|
-| `id` | INTEGER PRIMARY KEY | Unique habit identifier |
-| `name` | VARCHAR(100) | Name of the habit (e.g., "Drink water") |
-| `description` | TEXT | Optional description or motivation |
-| `deadline_time` | TIME | Deadline for completing the habit (e.g., 21:00) |
-| `frequency` | ENUM('daily', 'weekly', 'custom') | How often the habit should be repeated |
-| `active` | BOOLEAN DEFAULT TRUE | Whether the habit is active |
-| `created_at` | TIMESTAMP DEFAULT CURRENT_TIMESTAMP | When the habit was created |
-| `color` | VARCHAR(10) | LED or OLED color associated with the habit |
+| :--- | :--- | :--- |
+| `id` | INTEGER PRIMARY KEY | Unique habit identifier. |
+| `name` | VARCHAR(100) | Name of the habit (e.g., "Drink water"). |
+| `description` | TEXT | Optional description or motivation. |
+| `deadline_time` | TIME | Deadline for completing the habit (e.g., 21:00). |
+| `frequency` | ENUM | Frequency: `daily`, `weekly`, `monthly`, `hourly`, etc. |
+| `active` | BOOLEAN | Whether the habit is active (Default: `TRUE`). |
+| `created_at` | TIMESTAMP | Creation timestamp (Default: `CURRENT_TIMESTAMP`). |
+| `color` | VARCHAR(10) | Color associated with the habit (for UI/LEDs). |
+| `icon` | ENUM | Icon identifier for the UI. |
+| `type` | ENUM | Category type (e.g., `water`, `sport`, `code`). |
 
-
-### Table: `habit_tasks`
-Each record represents one scheduled occurrence of a habit (e.g., daily task).
-Used for history and streak tracking.
-
+### Table: habit_tasks
 | Column | Type | Description |
-|--------|------|-------------|
-| `id` | INTEGER PRIMARY KEY | Unique task identifier |
-| `habit_id` | INTEGER REFERENCES habits(id) | Related habit |
-| `date` | DATE | Date for this habit occurrence |
-| `completed` | BOOLEAN DEFAULT FALSE | Whether it was completed |
-| `completion_time` | TIMESTAMP NULL | When it was completed |
+| :--- | :--- | :--- |
+| `id` | INTEGER PRIMARY KEY | Unique task identifier. |
+| `habit_id` | INTEGER FK | Foreign key referencing `habits(id)`. |
+| `date` | DATE | The date the habit was intended for/completed. |
+| `completed` | BOOLEAN | Completion status (Default: `FALSE`). |
+| `completion_time` | TIMESTAMP | Exact timestamp of completion (UTC). |
 
-
-### Table: `habit_statistics`
-Aggregated habit statistics, updated after each completion.
-
+### Table: habit_statistics
 | Column | Type | Description |
-|--------|------|-------------|
-| `id` | INTEGER PRIMARY KEY | Unique statistics record |
-| `habit_id` | INTEGER REFERENCES habits(id) | Related habit |
-| `total_completions` | INTEGER DEFAULT 0 | Total number of completions |
-| `current_streak` | INTEGER DEFAULT 0 | Current streak of consecutive days |
-| `best_streak` | INTEGER DEFAULT 0 | Longest streak achieved |
-| `success_rate` | FLOAT DEFAULT 0 | Percentage of successful completions |
-| `last_completed` | DATE NULL | Last completion date |
-| `updated_at` | TIMESTAMP DEFAULT CURRENT_TIMESTAMP | Last update time |
+| :--- | :--- | :--- |
+| `id` | INTEGER PRIMARY KEY | Unique statistics record identifier. |
+| `habit_id` | INTEGER FK | Foreign key referencing `habits(id)`. |
+| `total_completions` | INTEGER | Total count of successful completions. |
+| `current_streak` | INTEGER | Current count of consecutive completions. |
+| `best_streak` | INTEGER | Highest streak ever achieved for this habit. |
+| `success_rate` | FLOAT | Percentage of successful completions vs opportunities. |
+| `last_completed` | DATE | Date of the last successful completion. |
+| `updated_at` | TIMESTAMP | Last time statistics were recalculated. |
 
-## Diagram ERD:
-
+### ER Diagram:
 <img width="578" height="487" alt="Image" src="https://github.com/user-attachments/assets/62d5e32d-f056-4b91-b551-dfae8bc929b0" />
 
----
-# Przepływ danych
-### 1. Konfiguracja i Tworzenie Nowego Nawyku
-
+## Data Flow
+### Configuration and Creation of a New Habit
 ```mermaid
 graph TD
     A[START: Użytkownik chce utworzyć nowy nawyk] --> B(Aplikacja Mobilna: POST /api/v1/habits z JSON);
@@ -301,7 +254,7 @@ graph TD
     Z500 --> ZK;
 ```
 
-### 2. Wykonanie i Potwierdzenie Nawyku (Interakcja z Kostką)
+### Execution and Confirmation of Habit (Cube Interaction)
 ```mermaid
 graph TD
     A[START: Użytkownik obraca i naciska Tact Switch] --> B(Intelligent Cube: Wykrycie ściany i wysłanie POST /api/v1/habits/id/complete);
@@ -335,8 +288,7 @@ graph TD
     Z400 --> ZK;
     Z500 --> ZK;
 ```
-
-### 3. Monitorowanie Postępów i Statystyk
+### Monitoring Progress and Statistics
 ```mermaid
 graph TD
     A[START: Użytkownik otwiera Aplikację Mobilną] --> B{Użytkownik: Czy chce zobaczyć listę czy szczegóły?};
@@ -364,115 +316,148 @@ graph TD
     Z404_G --> K_E;
 ```
 
-## 4. Szczegółowe Funkcjonalności Systemu HabCube
-### 4.1 Funkcjonalności Aplikacji Mobilnej (UI/Frontend)
-| Lp. | Kategoria | Funkcjonalność | Opis |
+
+### Detailed Functionalities
+| ID | Category | Functionality | Description |
 | :--- | :--- | :--- | :--- |
-| **A1** | **Zarządzanie Nawykami** | **Tworzenie/Konfiguracja Nawyku** | Umożliwia dodanie nowego nawyku (nazwa, opis), ustawienie **częstotliwości** (`daily`, `weekly`, etc.) oraz opcjonalnego **deadline'u** (`HH:MM`). |
-| **A2** | **Zarządzanie Nawykami** | **Aktywacja Dziennego Zestawu** | Użytkownik **ręcznie aktywuje** listę nawyków, które chce wykonywać danego dnia. Lista ta jest następnie przesyłana do kostki. |
-| **A3** | **Zarządzanie Nawykami** | **Edycja/Usuwanie** | Umożliwia modyfikację parametrów istniejącego nawyku lub jego całkowite usunięcie z systemu. |
-| **A4** | **Monitorowanie** | **Wizualizacja Postępów** | Prezentacja statystyk dla każdego nawyku: **Total Completions**, **Current Streak**, **Best Streak**. |
-| **A5** | **Monitorowanie** | **Historia Ukończeń** | Wyświetlanie szczegółowego kalendarza lub listy zadań (`HabitTask`) z datami i czasem ukończenia. |
-| **A6** | **Interakcja z Kostką** | **Łączenie/Konfiguracja** | Umożliwia połączenie się z kostką w sieci lokalnej oraz **przypisanie nawyku do ekranów** kostki. |
+| **A1** | **Habit Management** | **Create/Configure** | Enables adding a new habit (name, description), setting **frequency** (`daily`, `weekly`, etc.) and optional **deadline**. |
+| **A2** | **Habit Management** | **Activate Daily Set** | User **manually activates** a list of habits to perform on a given day, which is then sent to the cube. |
+| **A3** | **Habit Management** | **Edit/Delete** | Enables modification of existing habit parameters or removing it completely from the system. |
+| **A4** | **Monitoring** | **Progress Visualization** | Presentation of statistics: **Total Completions**, **Current Streak**, **Best Streak**. |
+| **A5** | **Monitoring** | **Completion History** | Displays a detailed calendar or task list (`HabitTask`) with completion dates/times. |
+| **A6** | **Cube Interaction** | **Pairing/Config** | Enables connecting to the cube on the local network and **assigning habits to the cube's screens**. |
 
-### 4.2 Funkcjonalności Intelligent Cube (Hardware)
-| Lp. | Kategoria | Funkcjonalność | Opis |
+### Intelligent Cube (Hardware)
+| ID | Category | Functionality | Description |
 | :--- | :--- | :--- | :--- |
-| **C1** | **Wyświetlanie Stanu** | **Wyświetlanie Nawyków** | **Ekrany OLED** wyświetlają  **aktywny nawyk** na dany dzień, wraz z jego aktualnym statusem. |
-| **C2** | **Interakcja** | **Zmiana Aktywnego Nawyku (Tact Switch)** | **Wciśnięcie przycisku Tact Switch** na aktywnej ścianie powoduje zmianę wyświetlanego nawyku (np. z "Czytanie" na "Bieganie"). |
-| **C3** | **Interakcja** | **Potwierdzenie Ukończenia (Obrót)** | **Obrócenie kostki** na ścianę - wykryty przez **Żyroskop**) jest interpretowane jako potwierdzenie ukończenia zadania. |
-| **C4** | **Motywacja** | **Feedback Zmysłowy** | Po pomyślnym ukończeniu nawyku (C3) kostka dostarcza **Motywacyjny Feedback** ("dopamine hit"): **LEDy** migają, a **Głośnik** odtwarza dźwięk. |
-| **C5** | **Komunikacja** | **Wysyłanie Danych** | Po potwierdzeniu (C3), kostka wysyła żądanie `POST /api/v1/habits/{id}/complete` do Serwera Centralnego, rejestrując wykonanie. |
-| **C6** | **Komunikacja** | **Odbiór Konfiguracji** | Kostka odbiera z Serwera Centralnego listę aktywnych nawyków na dany dzień i dynamicznie aktualizuje swoje wyświetlacze. |
----
+| **C1** | **State Display** | **Display Habits** | **OLED Screens** display the **active habit** for the day along with its current status. |
+| **C2** | **Interaction** | **Change Active Habit** | **Pressing the Tact Switch** on the active face changes the displayed habit (e.g., "Reading" -> "Running"). |
+| **C3** | **Interaction** | **Confirm Completion** | **Rotating the cube** onto a specific face (detected by **Gyroscope**) confirms task completion. |
+| **C4** | **Motivation** | **Sensory Feedback** | Upon completion (C3), the cube provides **Motivational Feedback**: **LEDs** flash and **Speaker** plays a sound. |
+| **C5** | **Communication** | **Send Data** | After confirmation, sends `POST /api/v1/habits/{id}/complete` to the Central Server. |
+| **C6** | **Communication** | **Receive Configuration** | Cube receives active habits list from Central Server and updates displays dynamically. |
 
-## Deployment na Google Cloud (TO TYLKO DLA ADMINA A.D)
+### Deployment on Google Cloud (FOR ADMIN A.D. ONLY)
+The application is ready for deployment on Google Cloud Platform with the following services:
+- Cloud Run - Serverless Flask backend
+- Cloud SQL for PostgreSQL - Managed database
+- Memorystore for Redis - Managed cache
+- Secret Manager - Secure credential storage
 
-Aplikacja jest gotowa do wdrożenia na Google Cloud Platform z następującymi serwisami:
-
-- **Cloud Run** - Serverless backend Flask
-- **Cloud SQL for PostgreSQL** - Zarządzana baza danych
-- **Memorystore for Redis** - Zarządzany cache
-- **Secret Manager** - Bezpieczne przechowywanie credentials
-- **Artifact Registry** - Rejestr obrazów Docker
-
-
-### Korzystanie z API (GCLOUD)
-
-1. gcloud auth login
-
-2. Wygenerować TOKENA
-
+### Using the API (GCLOUD)
+- Authenticate:
+```bash
+gcloud auth login
 ```
-    TOKEN=$(gcloud auth print-identity-token)
-  ```
-
-3. Można Curlować
-
-``` curl https://backend-1089871134307.europe-west1.run.app/api/v1/habits
-
+- Generate Token:
+```bash
+TOKEN=$(gcloud auth print-identity-token)
+```
+- Test via Curl:
+```bash
+curl [https://backend-1089871134307.europe-west1.run.app/api/v1/habits](https://backend-1089871134307.europe-west1.run.app/api/v1/habits)
 ```
 
-Powinno banglać
+## API Reference (Endpoints)
+### Habit Management Endpoints
+| Method | Endpoint | Description | Required Data |
+| :--- | :--- | :--- | :--- |
+| **GET** | `/habits` | Retrieves a list of all defined habits. | - |
+| **POST** | `/habits` | Creates a new habit. | JSON: `name`, `frequency`, `type`, etc. |
+| **GET** | `/habits/{id}` | Retrieves details of a specific habit with stats. | `id` (int) in URL |
+| **POST** | `/habits/{id}/complete` | Marks a habit as completed for today. | `id` (int) in URL |
+| **GET** | `/habits/active` | Retrieves habits "ready" to be completed now. | - |
+| **GET** | `/finished-habits` | Retrieves archived habits with success status. | - |
 
----
+### System Endpoints
+| Method | Endpoint | Description |
+| :--- | :--- | :--- |
+| **GET** | `/statistics` | Returns global user statistics (total habits, streaks). |
+| **GET** | `/health` | Health check - verifies service and DB status. |****
 
 ## Changelog
+2025-10-20
+### Google Cloud Deployment Ready
 
-### 2025-10-20
+- Backend Configuration
 
-**Google Cloud Deployment Ready**
+    - Updated config.py to support Cloud SQL (127.0.0.1) and Memorystore.
 
-- **Backend Configuration**
+    - Added support for environment variables: DB_HOST, DB_USER, REDIS_HOST, etc.
 
-  - Zaktualizowano `config.py` do obsługi Cloud SQL (127.0.0.1) i Memorystore
-  - Dodano wsparcie dla zmiennych środowiskowych: `DB_HOST`, `DB_USER`, `REDIS_HOST`, etc.
-  - Zachowano kompatybilność z lokalnym Docker Compose
+    - Maintained compatibility with local Docker Compose.
 
-- **Dockerfile Improvements**
+- Dockerfile Improvements
 
-  - Dodano wsparcie dla zmiennej `PORT` (wymaganej przez Cloud Run)
-  - Zaktualizowano CMD do używania `${PORT:-5000}`
-  - Health check używa dynamicznego portu
+    - Added support for the PORT variable (required by Cloud Run).
 
-- **Deployment Tools**
-  - Utworzono `deploy-gcloud.sh` - interaktywny skrypt deployment
-  - Utworzono `.env.gcloud.template` - szablon konfiguracji dla GCP
+    - Updated CMD to use ${PORT:-5000}.
+
+    - Health check now uses the dynamic port.
+
+- Deployment Tools
+
+    - Created deploy-gcloud.sh - interactive deployment script.
+
+    - Created .env.gcloud.template - GCP configuration template.
 
 ### 2025-10-15
+### Habits API - Initial Implementation
 
-**Habits API - Initial Implementation**
+- Models
 
-- **Modele**
+    - Created Habit model - stores user habits.
 
-  - Utworzono model `Habit` - przechowywanie nawyków użytkownika
-  - Utworzono model `HabitTask` - rejestrowanie wykonań nawyków
-  - Utworzono model `HabitStatistics` - statystyki i streaki
-  - Dodano migracje bazy danych
+    - Created HabitTask model - registers habit executions.
 
-- **Enumy i DTO**
+    - Created HabitStatistics model - statistics and streaks.
 
-  - `FrequencyType` enum: every_30_min, hourly, every_3_hours, every_6_hours, daily, weekly, monthly
-  - `CreateHabitDTO` - walidacja danych wejściowych
-  - `HabitResponseDTO` - format odpowiedzi API
+    - Added database migrations.
 
-- **ENDPOINTY**
+- Enums and DTOs
 
-  - `GET /api/v1/habits` - lista wszystkich nawyków
-  - `GET /api/v1/habits/{id}` - szczegóły nawyku ze statystykami
-  - `POST /api/v1/habits` - tworzenie nowego nawyku
-  - `POST /api/v1/habits/{id}/complete` - oznaczanie nawyku jako ukończony
+    - FrequencyType enum: every_30_min, hourly, every_3_hours, every_6_hours, daily, weekly, monthly.
 
-- **Dokumentacja API**
+    - CreateHabitDTO - input data validation.
 
-  - Integracja Swagger/Flasgger
-  - Przykłady request/response dla każdego endpointa
-  - Dostępna pod: http://localhost:5000/api/docs/
+    - HabitResponseDTO - API response format.
 
-- **Testy**
-  - Testy dla wszystkich endpointów
-  - Testy walidacji danych
-  - Testy błędnych przypadków (404, 400)
-  - Testy trackowania statystyk i streaków
+- Endpoints
+
+    - GET /api/v1/habits - list of all habits.
+
+    - GET /api/v1/habits/{id} - habit details with statistics.
+
+    - POST /api/v1/habits - create new habit.
+
+    - POST /api/v1/habits/{id}/complete - mark habit as completed.
+
+- Documentation
+
+    - Swagger/Flasgger integration.
+    
+    - Request/Response examples for each endpoint.
+    
+    - Available at: http://localhost:5000/api/docs/
+
+- Tests
+    - Tests for all endpoints.
+
+    - Data validation tests.
+
+    - Error case tests (404, 400).
+
+    - Statistics and streak tracking tests.
+
+### Team
+- Piotr Ziobrowski - Embedded programming, Cube 3
+
+- Szymon Domagała - Frontend, UI
+
+- Paweł Klocek - Database, Backend, Documentation
+
+- Aleksy Dąda - Backend, Docker
+
+- Patryk Kurek - Hardware, Embedded programming, Tech Lead
 
 Special thanks to: https://github.com/amora-labs/micropython-captive-portal/blob/master/captive.py
