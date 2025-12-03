@@ -60,7 +60,7 @@ const AddHabitScreen = ({ navigation }: Props) => {
           type: 'success',
           text1: 'Habit added successfully!',
           position: 'bottom',
-          visibilityTime:2000,
+          visibilityTime: 2000,
         });
         setTimeout(() => {
           navigation.navigate("MainPage");
@@ -72,7 +72,7 @@ const AddHabitScreen = ({ navigation }: Props) => {
         type: 'error',
         text1: 'Failed to add habit.',
         position: 'bottom',
-        visibilityTime:2000,
+        visibilityTime: 2000,
       });
     }
   };
@@ -126,28 +126,34 @@ const AddHabitScreen = ({ navigation }: Props) => {
         </View>
 
         <Text style={styles.title}>Type of an activity:</Text>
-        <Picker
-          selectedValue={habitIconType}
-          onValueChange={(itemValue) => setHabitIconType(itemValue)}
-          style={styles.pickerContainer}
-        >
-          <Picker.Item label="Water" value="water" />
-          <Picker.Item label="Code" value="code" />
-          <Picker.Item label="Sport" value="sport" />
-          <Picker.Item label="Language" value="language" />
-          <Picker.Item label="Read" value="read" />
-        </Picker>
+        <View style={styles.pickerWrapper}>
+          <Picker
+            selectedValue={habitIconType}
+            onValueChange={(itemValue) => setHabitIconType(itemValue)}
+            style={styles.picker}
+            dropdownIconColor="#000"
+          >
+            <Picker.Item label="Water" value="water" />
+            <Picker.Item label="Code" value="code" />
+            <Picker.Item label="Sport" value="sport" />
+            <Picker.Item label="Language" value="language" />
+            <Picker.Item label="Read" value="read" />
+          </Picker>
+        </View>
 
         <Text style={styles.title}>Frequency:</Text>
-        <Picker
-          selectedValue={habitFrequency}
-          onValueChange={(itemValue) => setHabitFrequency(itemValue as FrequencyType)}
-          style={styles.pickerContainer}
-        >
-          <Picker.Item label="Daily" value="daily" />
-          <Picker.Item label="Weekly" value="weekly" />
-          <Picker.Item label="Monthly" value="monthly" />
-        </Picker>
+        <View style={styles.pickerWrapper}>
+          <Picker
+            selectedValue={habitFrequency}
+            onValueChange={(itemValue) => setHabitFrequency(itemValue as FrequencyType)}
+            style={styles.picker}
+            dropdownIconColor="#000"
+          >
+            <Picker.Item label="Daily" value="daily" />
+            <Picker.Item label="Weekly" value="weekly" />
+            <Picker.Item label="Monthly" value="monthly" />
+          </Picker>
+        </View>
 
         <Text style={styles.title}>Start Date:</Text>
         <TouchableOpacity
@@ -271,6 +277,19 @@ const styles = StyleSheet.create({
   },
   navbarContainer: {
     backgroundColor: "#000000",
+  },
+  pickerWrapper: {
+    borderColor: "#CCCCCC",
+    borderWidth: 1,
+    borderRadius: 8,
+    marginHorizontal: 20,
+    marginBottom: 15,
+    backgroundColor: "#FFFFFF",
+    overflow: "hidden",
+  },
+  picker: {
+    height: 50,
+    color: "#000",
   },
 });
 
