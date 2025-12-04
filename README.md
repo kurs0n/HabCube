@@ -481,9 +481,6 @@ The application automatically detects the running environment to set the correct
 | **BottomNavbar** | Custom navigation bar visible on main screens, handling routing. |
 ---
 
-### 2. Instrukcja Instalacji Frontendu (`docs/FRONTEND_SETUP.md`)
-
-Ten plik zawiera instrukcje dla deweloperów, jak uruchomić aplikację.
 
 # Frontend Setup Guide
 
