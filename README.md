@@ -207,7 +207,6 @@ make quality   # Run all checks
 | `created_at` | TIMESTAMP | Creation timestamp (Default: `CURRENT_TIMESTAMP`). |
 | `color` | VARCHAR(10) | Color associated with the habit (for UI/LEDs). |
 | `icon` | ENUM | Icon identifier for the UI. |
-| `type` | ENUM | Category type (e.g., `water`, `sport`, `code`). |
 
 ### Table: habit_tasks
 | Column | Type | Description |
@@ -231,7 +230,7 @@ make quality   # Run all checks
 | `updated_at` | TIMESTAMP | Last time statistics were recalculated. |
 
 ### ER Diagram:
-<img width="578" height="487" alt="Image" src="https://github.com/user-attachments/assets/62d5e32d-f056-4b91-b551-dfae8bc929b0" />
+<img width="571" height="631" alt="image" src="https://github.com/user-attachments/assets/c8e2e2a0-47d6-45f0-b338-0eb8ae989266" />
 
 ## Data Flow
 ### Configuration and Creation of a New Habit
@@ -328,7 +327,6 @@ graph TD
     Z500_G --> K_E[END: Błąd];
     Z404_G --> K_E;
 ```
-
 
 ### Detailed Functionalities
 | ID | Category | Functionality | Description |
