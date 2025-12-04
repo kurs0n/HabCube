@@ -42,26 +42,7 @@ steps:
           --task-timeout 10m
         gcloud run jobs execute backend-migrate --region "${_REGION}" --wait
 
-  # 5. (Re)create and run seed job
-  - name: "gcr.io/google.com/cloudsdktool/cloud-sdk"
-    entrypoint: "bash"
-    args:
-      - "-c"
-      - |
-        set -e
-        gcloud run jobs delete backend-seed --region "${_REGION}" --quiet || true
-        gcloud run jobs create backend-seed \
-          --image "${_IMAGE_TAG}" \
-          --region "${_REGION}" \
-          --service-account "${_SERVICE_ACCOUNT}" \
-          --set-cloudsql-instances "${_CLOUD_SQL_CONNECTION_NAME}" \
-          --set-env-vars "FLASK_ENV=production,FLASK_APP=wsgi:app,DB_HOST=/cloudsql/${_CLOUD_SQL_CONNECTION_NAME},DB_PORT=5432,DB_USER=${_DB_USER},DB_NAME=${_DB_NAME}" \
-          --update-secrets "DB_PASSWORD=db-password:latest,SECRET_KEY=flask-key:latest,JWT_SECRET_KEY=jwt-key:latest" \
-          --command "flask" --args "seed" \
-          --task-timeout 10m
-        gcloud run jobs execute backend-seed --region "${_REGION}" --wait
-
-  # 6. Switch traffic to new revision
+  # 5. Switch traffic to new revision
   - name: "gcr.io/google.com/cloudsdktool/cloud-sdk"
     entrypoint: "bash"
     args:

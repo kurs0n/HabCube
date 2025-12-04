@@ -48,6 +48,13 @@ clean-all: ## Usuń wszystko włącznie z obrazami
 shell: ## Otwórz shell w kontenerze backendu
 	docker-compose exec backend bash
 
+# Google Cloud commands
+gcloud-reset-db: ## Zresetuj bazę danych na Google Cloud (UWAGA: usuwa wszystkie dane!)
+	@echo "WARNING: This will delete ALL data from the production database."
+	@read -p "Are you sure? [y/N] " ans && [ $${ans:-N} = y ]
+	gcloud run jobs execute backend-migrate --region europe-west1 --args reset --wait
+
+
 flask-shell: ## Otwórz Flask shell
 	docker-compose exec backend flask shell
 

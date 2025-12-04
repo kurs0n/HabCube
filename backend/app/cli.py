@@ -73,6 +73,34 @@ def seed_db():
     click.echo("✓ Seeded habits with statistics.")
 
 
+@click.command("reset")
+@with_appcontext
+def reset_db():
+    """Reset the database by deleting all data (Hard Reset)"""
+    from app.models.habit import HabitTask
+
+    click.echo("WARNING: This will delete ALL data from the database.")
+
+    try:
+        # Delete in order of dependencies
+        deleted_tasks = db.session.query(HabitTask).delete()
+        deleted_stats = db.session.query(HabitStatistics).delete()
+        deleted_habits = db.session.query(Habit).delete()
+
+        db.session.commit()
+
+        click.echo(f"✓ Deleted {deleted_tasks} tasks")
+        click.echo(f"✓ Deleted {deleted_stats} statistics records")
+        click.echo(f"✓ Deleted {deleted_habits} habits")
+        click.echo("Database reset complete.")
+
+    except Exception as e:
+        db.session.rollback()
+        click.echo(f"Error resetting database: {str(e)}")
+        raise
+
+
 def init_app(app):
     """Register CLI commands with the Flask app"""
     app.cli.add_command(seed_db)
+    app.cli.add_command(reset_db)
