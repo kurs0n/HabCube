@@ -53,7 +53,20 @@ All components communicate over a local Wi-Fi network.
 * **Deployment:** Google Cloud Run (Dockerized)
 
 ### Mobile App / UI
-* **Technology:** React Native (To be determined/finalized)
+* **Framework:** React Native (Expo)
+* **Language:** TypeScript
+* **Navigation:** React Navigation
+* **HTTP Client:** Axios
+* **State Management:** React Hooks (Custom Hooks)
+* **UI Components:** React Native Vector Icons (Ionicons), Safe Area Context
+
+### 3D Design & Manufacturing
+* **Software:** Autodesk Fusion 360
+* **Files:** `HabCube.f3z` (Source), `.stl` (Production)
+* **Method:** FDM 3D Printing (PLA/PETG)
+* **Components:**
+    * `new_cube.stl`: Main frame with screen mounts.
+    * `new_cap.stl`: Protective lid/cover.
 
 ### Database
 * **Engine:** PostgreSQL 13+
@@ -521,8 +534,70 @@ npm run android
 npm run ios
 ```
 
-
 Rebuild the app (npm run android / npm run ios).
+
+# 3D Design & Enclosure Documentation
+
+## 1. Overview
+The physical enclosure of the HabCube is designed to be compact, ergonomic, and durable. It houses the central ESP32 microcontroller, four OLED screens, sensors, and the power supply unit. The design focuses on modularity and ease of assembly using standard FDM 3D printing technology.
+
+## 2. Design Tools & Source Files
+* **CAD Software:** Autodesk Fusion 360
+* **Source File:** `HabCube.f3z` (Contains full assembly, parametric history, and component constraints).
+* **Export Format:** `.stl` (Stereolithography) for slicing and printing.
+
+## 3. Component Breakdown
+
+The enclosure consists of two primary parts designed to fit together seamlessly:
+
+### 3.1 Main Body (`new_cube.stl`)
+The core structural component of the device.
+* **Function:** Houses the main electronics (ESP32, Multiplexer, Gyroscope, Battery) and holds the display panels.
+* **Key Features:**
+    * **OLED Cutouts:** Four precise rectangular openings sized for 0.96" OLED displays (I2C/SPI) located on the side faces.
+    * **Mounting Points:** Internal standoffs/slots for securing the PCB and ESP32 module.
+    * **Cable Management:** Internal channels to route wires from the central controller to the peripheries without pinching.
+    * **Sensor Bay:** Dedicated space for the MPU6050 gyroscope to ensure accurate rotation tracking.
+
+### 3.2 Top Cap (`new_cap.stl`)
+The closing mechanism for the enclosure.
+* **Function:** Seals the device, protecting internal components from dust and damage.
+* **Key Features:**
+    * **Access:** Designed to be removable for maintenance or battery replacement.
+    * **Speaker Grille:** (Optional based on design) Perforations to allow sound from the internal buzzer/speaker to escape clearly.
+    * **Switch Access:** Integrated flexible area or cutout for the Tact Switches (Reset/Boot or Custom interactions).
+
+## 4. Design Specifications
+
+| Feature | Specification |
+| :--- | :--- |
+| **Dimensions** | Approx. 60mm x 60mm x 60mm (Standard handheld cube size) |
+| **Wall Thickness** | 2.0mm - 3.0mm (Optimized for rigidity vs. print time) |
+| **Tolerance** | 0.2mm clearance for snap-fit/sliding parts |
+| **Material** | PLA (Polylactic Acid) or PETG |
+
+## 5. 3D Printing Guidelines
+
+Recommended settings for reproducing the HabCube parts on a standard FDM printer (e.g., Prusa i3, Ender 3).
+
+### General Settings
+* **Nozzle Diameter:** 0.4mm
+* **Layer Height:** 0.2mm (Quality) or 0.24mm (Draft)
+* **Infill:** 15% - 20% (Grid or Gyroid pattern for strength)
+* **Shells/Perimeters:** 3 (To ensure wall strength for mounting screws)
+
+### Specific Instructions
+* **Supports:**
+    * *Main Body:* Required for the OLED window bridges. Use "Tree Supports" for easier removal.
+    * *Cap:* Generally prints flat without supports.
+* **Orientation:** Print the main body with the largest flat face down (usually the bottom) to maximize bed adhesion.
+
+## 6. Assembly Instructions
+1.  **Preparation:** Remove all support material and sand the edges if necessary.
+2.  **Screen Mounting:** Insert the 4 OLED screens into their respective slots. Secure with hot glue or small M2 screws depending on the mounting holes.
+3.  **Electronics:** Place the wiring harness and ESP32 into the center. Ensure the gyroscope is aligned with the cube's axes.
+4.  **Closing:** Snap or screw the `new_cap.stl` onto the `new_cube.stl`.
+
 ## Changelog
 2025-10-20
 ### Google Cloud Deployment Ready
