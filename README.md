@@ -375,6 +375,154 @@ curl [https://backend-1089871134307.europe-west1.run.app/api/v1/habits](https://
 | **GET** | `/statistics` | Returns global user statistics (total habits, streaks). |
 | **GET** | `/health` | Health check - verifies service and DB status. |****
 
+# HabCube Mobile Application Documentation
+
+## 1. Overview
+The HabCube mobile application is a cross-platform solution built with **React Native** and **TypeScript**. It acts as the primary user interface for configuring habits, tracking progress, and visualizing statistics from the IoT Cube.
+
+## 2. Technology Stack
+
+* **Framework:** React Native (0.81.4)
+* **Language:** TypeScript (5.9.2)
+* **Build Tool:** Expo / React Native CLI
+* **Navigation:** React Navigation (Native Stack)
+* **State Management:** React Hooks (`useState`, `useEffect`, Custom Hooks)
+* **HTTP Client:** Axios
+* **UI Libraries:**
+    * `react-native-vector-icons` (Ionicons)
+    * `react-native-safe-area-context`
+    * `@react-native-picker/picker`
+    * `@react-native-community/datetimepicker`
+    * `react-native-toast-message`
+
+## 3. Project Structure
+
+The project follows a **Feature-based / Component-folder** structure:
+
+```text
+src/
+├── api/                  # API communication layer
+│   ├── client.ts         # Axios instance configuration
+│   ├── endpoints.ts      # API URL constants
+│   └── habits.api.ts     # Service functions (GET, POST)
+├── assets/
+│   ├── data/
+│   │   └── icons.ts      # List of available habit icons
+│   └── iconNoBg1.png     # Application logo
+├── components/           # UI Components & Screens
+│   ├── AddHabit/         # Habit creation screen
+│   ├── AppLogo/          # Reusable logo component
+│   ├── BottomNavbar/     # Custom bottom navigation bar
+│   ├── FinishedHabits/   # History screen
+│   ├── HabitsStats/      # Statistics screen
+│   ├── MainPage/         # Dashboard (Active habits)
+│   └── WelcomeScreen.tsx # Intro screen
+├── constants/
+│   └── config.ts         # Environment configuration (API URL)
+├── hooks/                # Business Logic (Custom Hooks)
+│   ├── useCreateHabit.ts
+│   ├── useFinishedHabits.ts
+│   ├── useHabits.ts
+│   └── useStatsHabits.ts
+└── types/
+    └── habit.types.ts    # TypeScript interfaces
+```
+## 4. Architecture & Data Flow
+### The application uses the Service-Hook-Component pattern to separate concerns:
+- API Layer (src/api): Handles direct HTTP communication using Axios. It defines endpoints and raw data fetching functions.
+
+- Hooks Layer (src/hooks): Encapsulates business logic and state management. It calls the API layer and exposes simple variables (data, loading, error) to the UI.
+
+- UI Layer (src/components): Purely presentational components that consume Hooks to display data.
+
+### Example Flow: Fetching Habits
+- Component (MainPage) mounts and calls useHabits().
+
+- Hook (useHabits) sets loading=true and calls getHabits() from API.
+
+- API (habits.api.ts) performs GET /habits via Axios.
+
+- Backend returns JSON data.
+
+- Hook updates habits state and sets loading=false.
+
+- Component re-renders with the habit list.
+
+### Configuration (config.ts)
+The application automatically detects the running environment to set the correct Backend URL:
+
+- Android Emulator: Uses 10.0.2.2:5000 (Access to host localhost).
+
+- iOS Simulator: Uses localhost:5000.
+
+- Physical Device: Requires manual IP configuration or network tunneling (if not deployed to cloud).
+
+### Key Components Description
+| Component | Description |
+| :--- | :--- |
+| **WelcomeScreen** | Initial landing page with a "Start" button. |
+| **MainPage** | The dashboard displaying active habits, current streaks, and a 21-day progress bar. Allows checking completion status. |
+| **AddHabit** | A form to create new habits with validation. Users choose name, icon, frequency, and type. |
+| **FinishedHabits** | A list of archived or completed habits showing final stats and success status. |
+| **HabitsStats** | Global statistics dashboard (Total habits, Longest streak, Completion rate). |
+| **BottomNavbar** | Custom navigation bar visible on main screens, handling routing. |
+---
+
+### 2. Instrukcja Instalacji Frontendu (`docs/FRONTEND_SETUP.md`)
+
+Ten plik zawiera instrukcje dla deweloperów, jak uruchomić aplikację.
+
+# Frontend Setup Guide
+
+## Prerequisites
+
+Before running the mobile application, ensure you have:
+
+1.  **Node.js** (LTS version recommended) installed.
+2.  **npm** or **yarn** package manager.
+3.  **Mobile Development Environment:**
+    * **Android:** Android Studio with configured Android SDK and Emulator.
+    * **iOS (macOS only):** Xcode with iOS Simulator.
+4.  **Backend Running:** The Flask backend must be running on port `5000`.
+
+## Installation
+
+1.  Navigate to the project root directory:
+    ```bash
+    cd habcube
+    ```
+
+2.  Install dependencies:
+    ```bash
+    npm install
+    # or
+    yarn install
+    ```
+
+3.  Link assets (if using React Native CLI specific fonts/icons):
+    ```bash
+    npx react-native-asset
+    ```
+
+## Running the Application
+
+### 1. Start Metro Bundler
+Start the JavaScript bundler in a dedicated terminal:
+```bash
+npm start
+```
+### 2. Run on Emulator/Simulator
+For Android: Ensure your Android Emulator is running (visible in Android Studio Device Manager).
+```bash
+npm run android
+```
+### For iOS (macOS only):
+```bash
+npm run ios
+```
+
+
+Rebuild the app (npm run android / npm run ios).
 ## Changelog
 2025-10-20
 ### Google Cloud Deployment Ready
@@ -449,8 +597,8 @@ curl [https://backend-1089871134307.europe-west1.run.app/api/v1/habits](https://
 
     - Statistics and streak tracking tests.
 
-### Team
-- Piotr Ziobrowski - Embedded programming, Cube 3
+## Team
+- Piotr Ziobrowski - Embedded programming, Cube 3D project
 
 - Szymon Domagała - Frontend, UI
 
