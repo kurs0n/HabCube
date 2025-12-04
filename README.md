@@ -236,95 +236,116 @@ make quality   # Run all checks
 ### Configuration and Creation of a New Habit
 ```mermaid
 graph TD
-    A[START: Użytkownik chce utworzyć nowy nawyk] --> B(Aplikacja Mobilna: POST /api/v1/habits z JSON);
+    A[START: User wants to create a new habit] --> B(Mobile App: POST /api/v1/habits with JSON);
 
-    subgraph Walidacja Danych i DTO
-        B --> C1{Backend: Walidacja Format deadline_time HH:MM};
-        C1 -- Błąd formatu / Niepoprawna częstotliwość --> Z400[Zwróć 400: Invalid Input];
-        C1 -- OK --> C2{Backend: Walidacja frequency FrequencyType};
-        C2 -- OK --> D(Backend: Utworzenie i walidacja CreateHabitDTO);
+    subgraph Data Validation and DTO
+        B --> C1{Backend: Validate deadline_time format HH:MM};
+        C1 -- Format Error / Invalid Frequency --> Z400[Return 400: Invalid Input];
+        C1 -- OK --> C2{Backend: Validate frequency FrequencyType};
+        C2 -- OK --> D(Backend: Create and validate CreateHabitDTO);
     end
 
-    D -- Błąd walidacji DTO --> Z400;
-    D -- Walidacja OK --> E(Backend: Utworzenie obiektu Habit);
+    D -- Validation Error --> Z400;
+    D -- Validation OK --> E(Backend: Create Habit object);
 
-    subgraph Transakcja Bazodanowa
-        E --> F1(DB: Dodaj Habit flush po ID);
-        F1 --> F2(DB: Utwórz HabitStatistics z habit_id);
-        F2 --> G(DB: Commit - Zapisz oba rekordy);
-        G -- Błąd Commit/DB --> Z500[DB: Rollback i Zwróć 500];
+    subgraph Database Transaction
+        E --> F1(DB: Add Habit flush by ID);
+        F1 --> F2(DB: Create HabitStatistics with habit_id);
+        F2 --> G(DB: Commit - Save both records);
+        G -- Commit/DB Error --> Z500[DB: Rollback and Return 500];
     end
 
-    G --> H(Backend: Zwróć 201 Created);
-    H --> I(Aplikacja Mobilna: Potwierdzenie sukcesu);
+    G --> H(Backend: Return 201 Created);
+    
+    subgraph Post-Creation Actions
+        H --> H1(Notification Service: Schedule Reminders based on Frequency);
+        H --> I(Mobile App: Success Confirmation);
+        I --> J{Async: Backend sends config to Cube};
+        J --> K(Intelligent Cube: Update Screens/Local Config);
+    end
 
-    I --> J{Asynchronicznie: Backend wysyła konfigurację do Kostki};
-    J --> K(Intelligent Cube: Aktualizacja Ekranów/Lokalnej Konfiguracji);
-    K --> L[END: Nowy nawyk gotowy];
+    K --> L[END: New habit ready];
 
-    Z400 --> ZK[END: Proces zakończony błędem];
+    Z400 --> ZK[END: Process finished with error];
     Z500 --> ZK;
 ```
 
 ### Execution and Confirmation of Habit (Cube Interaction)
 ```mermaid
 graph TD
-    A[START: Użytkownik obraca i naciska Tact Switch] --> B(Intelligent Cube: Wykrycie ściany i wysłanie POST /api/v1/habits/id/complete);
-    B --> C(Backend: Pobierz Habit - habit_id);
-    C -- Brak Habitu --> Z404[Zwróć 404: Habit not found];
+    A[START: User rotates and presses Tact Switch] --> B(Intelligent Cube: Detect face and send POST /api/v1/habits/id/complete);
+    B --> C(Backend: Get Habit - habit_id);
+    C -- No Habit --> Z404[Return 404: Habit not found];
 
-    subgraph Weryfikacja i Task
-        C -- Habit OK --> D{Backend: Sprawdź, czy nawyk ukończony dzisiaj?};
-        D -- Tak --> Z400[Zwróć 400: Already completed today];
-        D -- Nie --> E(Backend: Utwórz HabitTask i dodaj do sesji);
+    subgraph Verification and Task
+        C -- Habit OK --> D{Backend: Check if completed today?};
+        D -- Yes --> Z400[Return 400: Already completed today];
+        D -- No --> E(Backend: Create HabitTask and add to session);
     end
 
-    subgraph Aktualizacja Statystyk
-        E --> F(Backend: Pobierz/Utwórz HabitStatistics);
-        F --> G(Backend: Zaktualizuj total_completions, last_completed);
-        G --> H{Backend: Sprawdź poprzednie ukończenie Task};
-        H -- Różnica 1 dzień --> I(current_streak += 1);
-        H -- Inny przypadek --> J(current_streak = 1);
-        I --> K(Backend: Aktualizuj Best Streak);
+    subgraph Statistics and Gamification Update
+        E --> F(Backend: Get/Create HabitStatistics);
+        F --> G(Backend: Update total_completions, last_completed);
+        
+        %% NEW FUNCTIONALITY: Gamification
+        G --> G1(Backend: Calculate XP gained & Check Level Up);
+        
+        G1 --> H{Backend: Check previous Task completion};
+        H -- 1 day difference --> I(current_streak += 1);
+        H -- Other case --> J(current_streak = 1);
+        I --> K(Backend: Update Best Streak);
         J --> K;
     end
 
-    K --> L(DB: Commit - Zapisz Task i Statystyki);
-    L -- Błąd Commit/DB --> Z500[DB: Rollback i Zwróć 500];
+    K --> L(DB: Commit - Save Task, Stats, and XP);
+    L -- Commit/DB Error --> Z500[DB: Rollback and Return 500];
 
-    L --> M(Backend: Zwróć 200 OK);
-    M --> N(Intelligent Cube: Uruchom Motywacyjny Feedback LEDs, Sound);
-    N --> O[END: Potwierdzenie wykonania];
+    L --> M(Backend: Return 200 OK + XP gained);
+    M --> N(Intelligent Cube: Trigger Motivational Feedback LEDs, Sound);
+    N --> O[END: Execution Confirmed];
 
-    Z404 --> ZK[END: Błąd];
+    Z404 --> ZK[END: Error];
     Z400 --> ZK;
     Z500 --> ZK;
 ```
 ### Monitoring Progress and Statistics
 ```mermaid
 graph TD
-    A[START: Użytkownik otwiera Aplikację Mobilną] --> B{Użytkownik: Czy chce zobaczyć listę czy szczegóły?};
+    A[START: User opens Mobile App] --> B{User: View List or Details?};
 
-    subgraph Lista Nawykow
-        B -- Lista (GET /habits) --> B1(Aplikacja Mobilna: GET /api/v1/habits);
+    subgraph Habit List
+        B -- List (GET /habits) --> B1(Mobile App: GET /api/v1/habits);
         B1 --> B2(Backend: Habit.query.all);
-        B2 -- Błąd DB --> Z500_G[Zwróć 500];
-        B2 -- OK --> B3(Backend: Konwersja do listy Habit DTO);
-        B3 --> B4(Aplikacja Mobilna: Wyświetlenie Listy);
+        B2 -- DB Error --> Z500_G[Return 500];
+        B2 -- OK --> B3(Backend: Convert to Habit DTO list);
+        B3 --> B4(Mobile App: Display List);
     end
 
-    subgraph Szczegoly Nawyku
-        B -- Szczegóły (GET /habits/id) --> C1(Aplikacja Mobilna: GET /api/v1/habits/id);
-        C1 --> C2(Backend: Pobierz Habit z DB);
-        C2 -- Habit nie znaleziony --> Z404_G[Zwróć 404];
-        C2 -- OK --> C3(Backend: Dołącz HabitStatistics);
-        C3 --> C4(Backend: Zwróć Habit DTO ze Statystykami);
-        C4 --> C5(Aplikacja Mobilna: Wyświetlenie Statystyk i Historii);
+    subgraph Habit Details with Filters
+        B -- Details (GET /habits/id) --> C0{Check: Date Filters applied?};
+        
+        C0 -- Yes --> C1_F(Mobile App: GET /api/v1/habits/id?start_date=X&end_date=Y);
+        C0 -- No --> C1(Mobile App: GET /api/v1/habits/id);
+        
+        C1_F --> C2(Backend: Get Habit from DB);
+        C1 --> C2;
+
+        C2 -- Habit not found --> Z404_G[Return 404];
+        C2 -- OK --> C3(Backend: Attach HabitStatistics);
+        
+        C3 --> C3_A{Filter Tasks by Date?};
+        C3_A -- Yes --> C3_B(Backend: Filter HabitTasks query by range);
+        C3_A -- No --> C3_C(Backend: Fetch recent HabitTasks);
+        
+        C3_B --> C4(Backend: Return Habit DTO with Statistics & Filtered History);
+        C3_C --> C4;
+        
+        C4 --> C5(Mobile App: Display Statistics and History);
     end
 
-    C5 --> K[END: Dane wyświetlone];
+    C5 --> K[END: Data Displayed];
     B4 --> K;
-    Z500_G --> K_E[END: Błąd];
+    Z500_G --> K_E[END: Error];
     Z404_G --> K_E;
 ```
 
