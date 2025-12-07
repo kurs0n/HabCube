@@ -8,6 +8,45 @@
 6. [Projekt 3D i Obudowa](#dokumentacja-projektu-3d-i-obudowy---habcube)
 
 ---
+# HabCube
+
+## Opis
+"Inteligentna Kostka" to urządzenie IoT, które wspiera użytkowników w kształtowaniu i utrzymywaniu codziennych nawyków. Nawyki definiowane są w aplikacji mobilnej, która umożliwia ich konfigurację oraz prezentację statystyk dotyczących postępów.
+
+## Wstęp
+Celem tego projektu jest stworzenie kompletnego systemu Internetu Rzeczy (IoT) zaprojektowanego do działania w sieci lokalnej. System łączy warstwę sprzętową (fizyczną kostkę) z aplikacją mobilną, która pozwala użytkownikom definiować, konfigurować i śledzić swoje nawyki, a także przeglądać statystyki swoich osiągnięć.
+
+Projekt integruje wiedzę z zakresu elektroniki, informatyki, programowania sieciowego oraz inżynierii systemów wbudowanych. Prace obejmują zarówno warstwę sprzętową (projekt i wykonanie kostki), jak i warstwę programową (komunikacja serwerowa, backend, mobilny interfejs użytkownika oraz ogólna integracja systemu).
+
+## Cele Projektu
+
+### Cele Ogólne
+- Stworzenie w pełni funkcjonalnego systemu IoT działającego w sieci lokalnej.
+- Osiągnięcie wysokiej skuteczności w pomaganiu użytkownikom w budowaniu i utrzymywaniu pozytywnych nawyków.
+- Zaprojektowanie systemu zwiększającego motywację i zaangażowanie użytkownika w proces samodoskonalenia.
+- Opracowanie produktu końcowego, który realnie poprawia jakość życia użytkowników poprzez wsparcie w osiąganiu celów związanych z nawykami.
+
+### Cele Edukacyjne
+- Zrozumienie praktycznych aspektów budowania kompletnych systemów IoT (od podstaw do wdrożenia).
+- Nauka integracji sprzętu i oprogramowania w jeden spójny system.
+- Rozwój umiejętności pracy zespołowej i zarządzania projektem.
+- Zdobycie doświadczenia w planowaniu, wdrażaniu, testowaniu i dokumentowaniu złożonego projektu technicznego.
+- Poznanie mechanizmów motywacyjnych najskuteczniejszych w kształtowaniu nawyków oraz projektowanie angażujących i intuicyjnych interakcji z użytkownikiem.
+
+## Zakres Projektu
+
+### Kluczowe Funkcjonalności
+- **Konfiguracja Nawyków**: Definiowanie i zarządzanie nawykami za pośrednictwem aplikacji mobilnej.
+- **Śledzenie Postępów**: Monitorowanie postępów użytkownika i prezentowanie ich w formie statystyk.
+- **Informacja Zwrotna i Motywacja**: Dostarczanie użytkownikom wizualnych, dźwiękowych i świetlnych "zastrzyków dopaminy" w celu wzmocnienia pozytywnych działań.
+
+### Architektura Systemu
+System składa się z trzech głównych komponentów:
+1.  **Inteligentna Kostka**: Fizyczne urządzenie oparte na mikrokontrolerze, stanowiące główny punkt interakcji z użytkownikiem.
+2.  **Serwer Centralny**: Usługa backendowa odpowiedzialna za obsługę komunikacji z kostką, przetwarzanie danych i przechowywanie statystyk użytkownika.
+3.  **Aplikacja Mobilna**: Interfejs użytkownika służący do konfiguracji kostki, definiowania nawyków i przeglądania danych o postępach.
+
+Wszystkie komponenty komunikują się ze sobą za pośrednictwem lokalnej sieci Wi-Fi.
 # Zespół
 
 | Imię i nazwisko | Rola | Zakres obowiązków |
