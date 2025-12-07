@@ -50,56 +50,128 @@ graph LR
     class Server cloudFill;
     class DB,Redis dbFill;
 ```
-
-
+## Interakcja z kostką - wykonywanie i potwierdzanie nawyków 
+Diagram przedstawia proces interakcji użytkownika z kostką: od wykonania nawyku (obrót/przycisk), poprzez weryfikację na backendzie i aktualizację statystyk, aż po informację zwrotną (LED/dźwięk). Uwzględniono również nową funkcjonalność: pobieranie listy nawyków poprzez naciśnięcie dwóch przycisków.
 ```mermaid
 graph TD
-    A[START: User Interaction] --> DECISION{Input Type?}
+    A[START: Interakcja Użytkownika] --> DECISION{Rodzaj wejścia?}
 
     %% --- ŚCIEŻKA 1: WYKONANIE NAWYKU (STARA) ---
-    DECISION -- Rotate / 1 Button --> B(Intelligent Cube: Detect face and send POST /api/v1/habits/id/complete)
-    B --> C(Backend: Get Habit - habit_id)
-    C -- No Habit --> Z404[Return 404: Habit not found]
+    DECISION -- Obrót / 1 Przycisk --> B(Intelligent Cube: Wykrycie ścianki i wysłanie POST /api/v1/habits/id/complete)
+    B --> C(Backend: Pobierz Habit - habit_id)
+    C -- Brak Nawyku --> Z404[Zwróć 404: Habit not found]
 
-    subgraph Verification and Task
-        C -- Habit OK --> D{Backend: Check if completed today?}
-        D -- Yes --> Z400[Return 400: Already completed today]
-        D -- No --> E(Backend: Create HabitTask and add to session)
+    subgraph Weryfikacja i Zadanie
+        C -- Nawyk OK --> D{Backend: Czy wykonano dzisiaj?}
+        D -- Tak --> Z400[Zwróć 400: Już wykonano dzisiaj]
+        D -- Nie --> E(Backend: Utwórz HabitTask i dodaj do sesji)
     end
 
-    subgraph Statistics and Gamification Update
-        E --> F(Backend: Get/Create HabitStatistics)
-        F --> G(Backend: Update total_completions, last_completed)
+    subgraph Aktualizacja Statystyk i Grywalizacja
+        E --> F(Backend: Pobierz/Utwórz HabitStatistics)
+        F --> G(Backend: Aktualizuj total_completions, last_completed)
         
         %% GAMIFICATION
-        G --> G1(Backend: Calculate XP gained & Check Level Up)
+        G --> G1(Backend: Oblicz zdobyte XP i sprawdź Level Up)
         
-        G1 --> H{Backend: Check previous Task completion}
-        H -- 1 day difference --> I(current_streak += 1)
-        H -- Other case --> J(current_streak = 1)
-        I --> K(Backend: Update Best Streak)
+        G1 --> H{Backend: Sprawdź ukończenie poprzedniego Zadania}
+        H -- Różnica 1 dnia --> I(current_streak += 1)
+        H -- Inny przypadek --> J(current_streak = 1)
+        I --> K(Backend: Aktualizuj Best Streak)
         J --> K
     end
 
-    K --> L(DB: Commit - Save Task, Stats, and XP)
-    L -- Commit/DB Error --> Z500[DB: Rollback and Return 500]
+    K --> L(DB: Commit - Zapisz Task, Stats i XP)
+    L -- Błąd Commit/DB --> Z500[DB: Rollback i Zwróć 500]
 
-    L --> M(Backend: Return 200 OK + XP gained)
-    M --> N(Intelligent Cube: Trigger Motivational Feedback LEDs, Sound)
-    N --> O[END: Execution Confirmed]
+    L --> M(Backend: Zwróć 200 OK + zdobyte XP)
+    M --> N(Intelligent Cube: Uruchom Feedback Motywacyjny LED, Dźwięk)
+    N --> O[KONIEC: Wykonanie Potwierdzone]
 
     %% --- ŚCIEŻKA 2: POBRANIE LISTY NAWYKÓW (NOWA) ---
-    DECISION -- Press 2 Buttons --> REQ_FETCH(Intelligent Cube: Send GET /api/v1/habits/active)
+    DECISION -- Naciśnięcie 2 Przycisków --> REQ_FETCH(Intelligent Cube: Wyślij GET /api/v1/habits/active)
     
-    subgraph Data Synchronization
-        REQ_FETCH --> BE_FETCH(Backend: Query Active Habits)
-        BE_FETCH --> DB_FETCH(DB: Fetch habits WHERE active=true)
-        DB_FETCH --> RESP_FETCH(Backend: Return 200 OK + JSON List)
+    subgraph Synchronizacja Danych
+        REQ_FETCH --> BE_FETCH(Backend: Zapytanie o Aktywne Nawyki)
+        BE_FETCH --> DB_FETCH(DB: Pobierz habits WHERE active=true)
+        DB_FETCH --> RESP_FETCH(Backend: Zwróć 200 OK + Lista JSON)
+    end
+```
+## Konfiguracja i Dodawanie nowego nawyku
+Diagram ilustruje proces tworzenia nowego nawyku w aplikacji mobilnej, weryfikację danych na serwerze, zapis do bazy oraz synchronizację konfiguracji z kostką.
+```mermaid
+graph TD
+    A[START: Użytkownik chce utworzyć nowy nawyk] --> B(Aplikacja Mobilna: POST /api/v1/habits z JSON);
+
+    subgraph Walidacja Danych i DTO
+        B --> C1{Backend: Waliduj format deadline_time HH:MM};
+        C1 -- Błąd formatu / Nieprawidłowa Częstotliwość --> Z400[Zwróć 400: Nieprawidłowe dane wejściowe];
+        C1 -- OK --> C2{Backend: Waliduj częstotliwość FrequencyType};
+        C2 -- OK --> D(Backend: Utwórz i waliduj CreateHabitDTO);
     end
 
-    RESP_FETCH --> CUBE_UPDATE(Intelligent Cube: Parse JSON & Update Internal List/Display)
-    CUBE_UPDATE --> END_FETCH[END: Habits Reloaded]
-    Z404 --> ZK[END: Error]
-    Z400 --> ZK
-    Z500 --> ZK
+    D -- Błąd Walidacji --> Z400;
+    D -- Walidacja OK --> E(Backend: Utwórz obiekt Habit);
+
+    subgraph Transakcja Bazodanowa
+        E --> F1(DB: Dodaj Habit flush by ID);
+        F1 --> F2(DB: Utwórz HabitStatistics z habit_id);
+        F2 --> G(DB: Commit - Zapisz oba rekordy);
+        G -- Błąd Commit/DB --> Z500[DB: Rollback i Zwróć 500];
+    end
+
+    G --> H(Backend: Zwróć 201 Created);
+    
+    subgraph Akcje Po Utworzeniu
+        H --> H1(Usługa Powiadomień: Zaplanuj Przypomnienia na podstawie Częstotliwości);
+        H --> I(Aplikacja Mobilna: Potwierdzenie Sukcesu);
+        I --> J{Async: Backend wysyła konfig do Kostki};
+        J --> K(Intelligent Cube: Aktualizuj Ekrany/Lokalną Konfigurację);
+    end
+
+    K --> L[KONIEC: Nowy nawyk gotowy];
+
+    Z400 --> ZK[KONIEC: Proces zakończony błędem];
+    Z500 --> ZK;
+```
+## Monitorowanie progresu wykonywania nawyków i statystyki
+Diagram prezentuje przepływ danych podczas przeglądania listy nawyków oraz szczegółowych statystyk w aplikacji mobilnej, z uwzględnieniem filtrowania dat.
+```mermaid
+graph TD
+    A[START: Użytkownik otwiera Aplikację Mobilną] --> B{Użytkownik: Widok Listy czy Szczegóły?};
+
+    subgraph Lista Nawyków
+        B -- Lista (GET /habits) --> B1(Aplikacja Mobilna: GET /api/v1/habits);
+        B1 --> B2(Backend: Habit.query.all);
+        B2 -- Błąd DB --> Z500_G[Zwróć 500];
+        B2 -- OK --> B3(Backend: Konwertuj na listę Habit DTO);
+        B3 --> B4(Aplikacja Mobilna: Wyświetl Listę);
+    end
+
+    subgraph Szczegóły Nawyku z Filtrami
+        B -- Szczegóły (GET /habits/id) --> C0{Sprawdź: Czy zastosowano filtry dat?};
+        
+        C0 -- Tak --> C1_F(Aplikacja Mobilna: GET /api/v1/habits/id?start_date=X&end_date=Y);
+        C0 -- Nie --> C1(Aplikacja Mobilna: GET /api/v1/habits/id);
+        
+        C1_F --> C2(Backend: Pobierz Habit z DB);
+        C1 --> C2;
+
+        C2 -- Habit nie znaleziony --> Z404_G[Zwróć 404];
+        C2 -- OK --> C3(Backend: Dołącz HabitStatistics);
+        
+        C3 --> C3_A{Filtrować Zadania po Dacie?};
+        C3_A -- Tak --> C3_B(Backend: Filtruj zapytanie HabitTasks po zakresie);
+        C3_A -- Nie --> C3_C(Backend: Pobierz ostatnie HabitTasks);
+        
+        C3_B --> C4(Backend: Zwróć Habit DTO ze Statystykami i Filtrowaną Historią);
+        C3_C --> C4;
+        
+        C4 --> C5(Aplikacja Mobilna: Wyświetl Statystyki i Historię);
+    end
+
+    C5 --> K[KONIEC: Dane Wyświetlone];
+    B4 --> K;
+    Z500_G --> K_E[KONIEC: Błąd];
+    Z404_G --> K_E;
 ```
