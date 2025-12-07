@@ -2102,7 +2102,7 @@ Zalecane ustawienia dla drukarek FDM (np. Prusa i3, Ender 3, Bambu Lab):
 
 ## 7. Instrukcja Montażu
 1.  **Przygotowanie:** Usuń materiał podporowy i w razie potrzeby oszlifuj krawędzie otworów na przyciski i ekrany.
-2.  **Montaż Ekranów:** Wsuń 4 ekrany OLED w odpowiednie sloty w finalnej wersji korpusu. Zabezpiecz klejem na gorąco lub małymi śrubami M2 (zależnie od otworów w PCB ekranu).
+2.  **Montaż Ekranów:** Wsuń 2 ekrany OLED w odpowiednie sloty w finalnej wersji korpusu. Zabezpiecz klejem na gorąco lub małymi śrubami M2 (zależnie od otworów w PCB ekranu).
 3.  **Elektronika:** Umieść wiązkę przewodów i Raspberry Pico w centrum. Upewnij się, że przyciski trafiają w przygotowane wycięcia.
 4.  **Zamknięcie:** Zatrzaśnij lub przykręć `new_cap.stl` na `new_cube.stl`.
 
