@@ -34,14 +34,14 @@ def display_text_centered(text):
 
         y_pos = y_start + (i * CHAR_HEIGHT)
         
-        if i > 0:
-            displays.text("-" +line, x_pos, y_pos, 1)
-        else:
-            displays.text(line, x_pos, y_pos, 1) 
+        displays.text(line, x_pos, y_pos, 1) 
 
     displays.show()
 
 def display_active_habit(active_habits,active_habit_index):
+    if len(active_habits) <= 0:
+        display_text_centered("No active habits try adding one in mobile app")
+        return
     habit_name = active_habits[active_habit_index]["name"]
     displays.fill(0)
     x_icon = (128 - 80) // 2
@@ -57,7 +57,12 @@ def display_active_habit(active_habits,active_habit_index):
         displays.blit(icons.fb_glasses,x_icon,0)
     elif (active_habits[active_habit_index]["type"] == "code"):
         displays.blit(icons.fb_code,x_icon,0)
+   
+    max_chars = 16 
     
+    if len(habit_name) > max_chars:
+        habit_name = habit_name[:max_chars - 3] + "..." 
+
     text_length = len(habit_name) * 8
     x_text = (128 - text_length) // 2
     y_text = 52

@@ -77,7 +77,7 @@ def init():
         captive.start(ap,wlan)
 
     load_active_habits() 
-    
+ 
     display.display_active_habit(active_habits,active_habit_index)
 active_habits = [] 
 
@@ -104,6 +104,8 @@ def play_sui_animation():
 
 
 def complete_and_switch_habit():
+    if len(active_habits) <= 0:
+        return
     response = requests.post(f"https://backend-1089871134307.europe-west1.run.app/api/v1/habits/{str(active_habits[active_habit_index]["id"])}/complete",json={})
     print(response.content) 
     if (response.status_code == 200):
