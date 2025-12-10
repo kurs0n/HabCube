@@ -44,7 +44,7 @@ const HabitsStatsScreen = ({ navigation }: Props) => {
 
         <View style={styles.statCard}>
           <Text style={styles.statLabel}>Completed habits</Text>
-          <Text style={styles.statValue}>{stats?.completed_habits_count}</Text>
+          <Text style={styles.statValue}>{stats?.completed_habits}</Text>
         </View>
       </ScrollView>
 

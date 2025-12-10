@@ -69,9 +69,9 @@ const MainPageScreen = ({ navigation }: Props) => {
           onPress={() => handleCompleteHabit(habit.id)}
         >
           <Icon
-            name={habit.statistics?.last_completed === new Date().toISOString().split('T')[0] ? "checkmark" : "ellipse-outline"}
+            name={habit.is_completed ? "checkmark" : "ellipse-outline"}
             size={24}
-            color={habit.statistics?.last_completed === new Date().toISOString().split('T')[0] ? "#FFF" : "#000"}
+            color={habit.is_completed ? "#04700fff" : "#FFF"}
           />
         </TouchableOpacity>
       </View>
@@ -86,7 +86,7 @@ const MainPageScreen = ({ navigation }: Props) => {
           />
         </View>
         <Text style={styles.progressText}>
-          {habit.statistics?.total_completions} / ${21} days
+          {habit.statistics?.total_completions} / {21} days
         </Text>
       </View>
     </View>

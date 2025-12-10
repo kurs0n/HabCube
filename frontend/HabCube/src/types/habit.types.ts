@@ -10,6 +10,7 @@ export interface IHabit {
   active: boolean;
   deadline_time?: string;
   statistics: IHabitStatistics;
+  is_completed: boolean;
 }
 
 export interface ICreateHabitDTO {

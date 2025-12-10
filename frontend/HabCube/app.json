@@ -1,7 +1,7 @@
 {
   "expo": {
     "name": "HabCube",
-    "slug": "HabCube",
+    "slug": "habcube",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/favicon.png",
@@ -33,8 +33,9 @@
     },
     "extra": {
       "eas": {
-        "projectId": "63ad40cc-92f6-4e7d-8590-9bbab179002a"
+        "projectId": "591d0f3a-c91b-42c8-9c29-ec38f07fdee7"
       }
-    }
+    },
+    "owner": "habitcubes-organization"
   }
 }
