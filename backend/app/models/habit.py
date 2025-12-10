@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import date, datetime, timedelta
 from typing import TYPE_CHECKING
 
 from app import db
@@ -49,9 +49,50 @@ class Habit(Model):
         cascade="all, delete-orphan",
     )
 
-    def to_dict(self):
+    def is_completed_for_period(self):
+        """Check if habit is completed for the current period based on frequency"""
+        from sqlalchemy import func
+
+        today = date.today()
+
+        # Define the start date for the period based on frequency
+        if self.frequency == FrequencyType.DAILY:
+            # Check if completed today
+            start_date = today
+        elif self.frequency == FrequencyType.WEEKLY:
+            # Check if completed this week (Monday-Sunday)
+            start_date = today - timedelta(days=today.weekday())
+        elif self.frequency == FrequencyType.MONTHLY:
+            # Check if completed this month
+            start_date = today.replace(day=1)
+        elif self.frequency in [
+            FrequencyType.EVERY_30_MIN,
+            FrequencyType.HOURLY,
+            FrequencyType.EVERY_3_HOURS,
+            FrequencyType.EVERY_6_HOURS,
+        ]:
+            # For time-based frequencies, check today
+            start_date = today
+        else:
+            start_date = today
+
+        # Query for completed tasks in the current period
+        completed_task = (
+            db.session.query(func.count(HabitTask.id))
+            .filter(
+                HabitTask.habit_id == self.id,
+                HabitTask.date >= start_date,
+                HabitTask.date <= today,
+                HabitTask.completed == True,
+            )
+            .scalar()
+        )
+
+        return completed_task > 0
+
+    def to_dict(self, include_completion_status=False):
         """Convert habit to dictionary"""
-        return {
+        result = {
             "id": self.id,
             "name": self.name,
             "description": self.description,
@@ -65,6 +106,11 @@ class Habit(Model):
             "created_at": self.created_at.isoformat() if self.created_at else None,
             "color": self.color,
         }
+
+        if include_completion_status:
+            result["is_completed"] = self.is_completed_for_period()
+
+        return result
 
     def __repr__(self):
         return f"<Habit {self.id}: {self.name}>"

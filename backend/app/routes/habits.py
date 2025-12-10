@@ -42,7 +42,17 @@ def get_habits():
         for habit in habits:
             recalculate_habit_statistics(habit)
         db.session.commit()
-        return jsonify({"habits": [habit.to_dict() for habit in habits]}), 200
+        return (
+            jsonify(
+                {
+                    "habits": [
+                        habit.to_dict(include_completion_status=True)
+                        for habit in habits
+                    ]
+                }
+            ),
+            200,
+        )
 
     except Exception as e:
         return jsonify({"error": f"Failed to fetch habits: {str(e)}"}), 500

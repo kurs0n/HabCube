@@ -59,9 +59,12 @@ class HabitResponseDTO:
     active: bool
     created_at: str
     color: Optional[str]
+    is_completed: Optional[bool] = None
 
     @classmethod
-    def from_model(cls, habit) -> "HabitResponseDTO":
+    def from_model(
+        cls, habit, include_completion_status: bool = False
+    ) -> "HabitResponseDTO":
         """Create DTO from Habit model"""
         return cls(
             id=habit.id,
@@ -75,11 +78,14 @@ class HabitResponseDTO:
             active=habit.active,
             created_at=habit.created_at.isoformat() if habit.created_at else None,
             color=habit.color,
+            is_completed=habit.is_completed_for_period()
+            if include_completion_status
+            else None,
         )
 
     def to_dict(self) -> dict:
         """Convert DTO to dictionary"""
-        return {
+        result = {
             "id": self.id,
             "name": self.name,
             "description": self.description,
@@ -90,3 +96,8 @@ class HabitResponseDTO:
             "created_at": self.created_at,
             "color": self.color,
         }
+
+        if self.is_completed is not None:
+            result["is_completed"] = self.is_completed
+
+        return result
