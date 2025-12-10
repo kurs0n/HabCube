@@ -174,10 +174,19 @@ def get_habits_statistics():
         else:
             average_completion_rate = round(average_completion_rate, 2)
 
+        # Calculate total completed habits (sum of all completions)
+        total_completed_habits = db.session.query(
+            func.sum(HabitStatistics.total_completions)
+        ).scalar()
+
+        if total_completed_habits is None:
+            total_completed_habits = 0
+
         response_data = {
             "total_habits": total_habits,
             "active_habits_count": active_habits_count,
             "inactive_habits_count": inactive_habits_count,
+            "completed_habits": total_completed_habits,
             "longest_streak": longest_streak,
             "average_completion_rate": average_completion_rate,
         }
