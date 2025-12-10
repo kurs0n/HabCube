@@ -15,11 +15,33 @@ habits_bp = Blueprint("habits", __name__)
 DOCS_DIR = os.path.join(os.path.dirname(os.path.dirname(__file__)), "docs")
 
 
+def recalculate_habit_statistics(habit):
+    """Recalculate and update statistics for a given habit"""
+    if not habit.statistics:
+        return
+
+    stats = habit.statistics
+
+    # Calculate success_rate based on days since creation and total completions
+    if habit.created_at:
+        days_since_creation = (date.today() - habit.created_at.date()).days + 1
+        expected_completions = max(1, days_since_creation)
+        stats.success_rate = round(
+            (stats.total_completions / expected_completions) * 100, 2
+        )
+
+    db.session.add(stats)
+
+
 @habits_bp.route("/habits", methods=["GET"])
 @swag_from(os.path.join(DOCS_DIR, "get_habits.yml"))
 def get_habits():
     try:
         habits = Habit.query.all()
+        # Recalculate statistics for all habits
+        for habit in habits:
+            recalculate_habit_statistics(habit)
+        db.session.commit()
         return jsonify({"habits": [habit.to_dict() for habit in habits]}), 200
 
     except Exception as e:
@@ -39,10 +61,11 @@ def get_active_habits():
         ready_habits = []
         for habit in active_habits:
             # Get last completion
-            last_task = HabitTask.query.filter_by(
-                habit_id=habit.id,
-                completed=True
-            ).order_by(HabitTask.completion_time.desc()).first()
+            last_task = (
+                HabitTask.query.filter_by(habit_id=habit.id, completed=True)
+                .order_by(HabitTask.completion_time.desc())
+                .first()
+            )
 
             is_ready = False
 
@@ -73,12 +96,17 @@ def get_active_habits():
                     is_ready = (today - last_task.date).days >= 30
 
             if is_ready:
+                # Recalculate statistics before adding to response
+                recalculate_habit_statistics(habit)
                 ready_habits.append(habit.to_dict())
 
+        db.session.commit()
         return jsonify({"habits": ready_habits}), 200
 
     except Exception as e:
         return jsonify({"error": f"Failed to fetch active habits: {str(e)}"}), 500
+
+
 @habits_bp.route("/finished-habits", methods=["GET"])
 @swag_from(os.path.join(DOCS_DIR, "finished_habits.yml"))
 def get_finished_habits():
@@ -105,7 +133,7 @@ def get_finished_habits():
             else:
                 finished_habit["best_streak"] = 0
                 finished_habit["success_status"] = False
-                finished_habit["finish_date"] = ''
+                finished_habit["finish_date"] = ""
 
             finished_habits.append(finished_habit)
 
@@ -115,15 +143,24 @@ def get_finished_habits():
         print(f"Error: {e}")
         return jsonify({"error": f"Failed to fetch habits: {str(e)}"}), 500
 
+
 @habits_bp.route("/statistics", methods=["GET"])
 def get_habits_statistics():
     try:
+        # Recalculate statistics for all habits before returning
+        all_habits = Habit.query.all()
+        for habit in all_habits:
+            recalculate_habit_statistics(habit)
+        db.session.commit()
+
         total_habits = db.session.query(func.count(Habit.id)).scalar()
 
         active_habits_count = db.session.query(Habit).filter_by(active=True).count()
         inactive_habits_count = total_habits - active_habits_count
 
-        longest_streak = db.session.query(func.max(HabitStatistics.best_streak)).scalar()
+        longest_streak = db.session.query(
+            func.max(HabitStatistics.best_streak)
+        ).scalar()
 
         if longest_streak is None:
             longest_streak = 0
@@ -140,9 +177,9 @@ def get_habits_statistics():
         response_data = {
             "total_habits": total_habits,
             "active_habits_count": active_habits_count,
-            "completed_habits_count": inactive_habits_count,
+            "inactive_habits_count": inactive_habits_count,
             "longest_streak": longest_streak,
-            "average_completion_rate": average_completion_rate
+            "average_completion_rate": average_completion_rate,
         }
 
         return jsonify(response_data), 200
@@ -160,6 +197,10 @@ def get_habit(habit_id):
 
         if not habit:
             return jsonify({"error": "Habit not found"}), 404
+
+        # Recalculate statistics before returning
+        recalculate_habit_statistics(habit)
+        db.session.commit()
 
         response_data = habit.to_dict()
 
@@ -215,6 +256,7 @@ def create_habit():
 
         # Validate type
         from app.models.enums import HabitType
+
         habit_type = data.get("type", HabitType.WATER.value)
         if habit_type and not HabitType.is_valid(habit_type):
             return (
@@ -308,6 +350,13 @@ def complete_habit(habit_id):
         statistics.total_completions += 1
         statistics.last_completed = completion_date
         statistics.updated_at = datetime.utcnow()
+
+        # Calculate success rate
+        days_since_creation = (completion_date - habit.created_at.date()).days + 1
+        expected_completions = max(1, days_since_creation)  # At least 1 expected
+        statistics.success_rate = round(
+            (statistics.total_completions / expected_completions) * 100, 2
+        )
 
         # Update streak
         if statistics.total_completions == 1:
