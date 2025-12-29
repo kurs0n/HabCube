@@ -4,6 +4,10 @@
 
 The "Intelligent Cube" is an IoT device that supports users in forming and maintaining daily habits. Habits are defined in a mobile application, which allows for configuration and the presentation of statistics regarding progress.
 
+## Prototype Video
+ 
+https://youtu.be/eo05IGiR9LY
+
 ## Introduction
 
 The goal of this project is to create a complete Internet of Things (IoT) system designed to operate on a local network. The system combines hardware (the physical cube) with a mobile application that allows users to define, configure, and track their habits, as well as view statistics on their progress.

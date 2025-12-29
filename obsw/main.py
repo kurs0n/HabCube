@@ -104,13 +104,18 @@ def play_sui_animation():
 
 
 def complete_and_switch_habit():
-    if len(active_habits) <= 0:
-        return
-    response = requests.post(f"https://backend-1089871134307.europe-west1.run.app/api/v1/habits/{str(active_habits[active_habit_index]["id"])}/complete",json={})
-    print(response.content) 
-    if (response.status_code == 200):
-        active_habits.pop(active_habit_index)
-        switch_next_habit()
+    try:
+        if len(active_habits) <= 0:
+            return
+        response = requests.post(f"https://backend-1089871134307.europe-west1.run.app/api/v1/habits/{str(active_habits[active_habit_index]["id"])}/complete",json={})
+        print(response.content) 
+        if (response.status_code == 200):
+            active_habits.pop(active_habit_index)
+            switch_next_habit()
+    except requests.exceptions.HTTPError:
+        print("error")
+        return 
+
 
 def switch_next_habit():
     global active_habit_index
@@ -166,7 +171,7 @@ def loop():
             gyro_z_deg = 0
 
         angle_z += gyro_z_deg * dt
-
+        print(angle_z)
         if abs(angle_z) >= 160:        
             print("Rotation!")
             
@@ -174,6 +179,11 @@ def loop():
             play_sui_animation()
 
             complete_and_switch_habit()
+
+            gyro_offset_raw = calibrate_gyro() 
+    
+            angle_z = 0.0
+            last_time = utime.ticks_ms()
 
             display.display_active_habit(active_habits, active_habit_index)
 
